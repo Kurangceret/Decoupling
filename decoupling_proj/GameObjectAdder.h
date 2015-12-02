@@ -19,7 +19,7 @@ public:
 	void addTile(const std::string& layer, const sf::Vector2f& pos,
 		const sf::IntRect& intRect, int tileSetId);
 	void addVertexNode(const std::string& layer, const sf::Vector2f& pos,
-		const sf::IntRect& intRect, int tileSetId);
+		const sf::IntRect& intRect, int tileSetId, int tileId);
 	void addSpider(const std::string& layer, const sf::Vector2f& pos,
 		const sf::IntRect& intRect, int tileSetId);
 	void addSwampMoa(const std::string& layer, const sf::Vector2f& pos);

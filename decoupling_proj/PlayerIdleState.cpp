@@ -12,9 +12,12 @@
 #include "Utility.h"
 #include "TransformableComponent.h"
 #include "PlayerLeftClawState.h"
+#include "PlayerHookState.h"
+#include "SpiritCoreComponent.h"
+#include "PlayerAimRangeState.h"
 
-PlayerIdleState::PlayerIdleState(Entity* playerEntity)
-:PlayerState(playerEntity)
+PlayerIdleState::PlayerIdleState(Entity* playerEntity, const luabridge::LuaRef& playerStateTable)
+:PlayerState(playerEntity, playerStateTable)
 {
 }
 
@@ -53,7 +56,7 @@ PlayerState* PlayerIdleState::handleEvent(const sf::Event& event,
 		if (nextSideStepDir == sf::Vector2f())
 			nextSideStepDir = velocityComp->getFacingDirection() * -1.f;
 
-		return new PlayerSideStepState(mPlayer, nextSideStepDir);
+		return new PlayerSideStepState(mPlayer, nextSideStepDir, mPlayerStateTable);
 	}
 
 	if (event.type == sf::Event::KeyPressed && 
@@ -61,25 +64,47 @@ PlayerState* PlayerIdleState::handleEvent(const sf::Event& event,
 	{
 		attackModeComp->incrementIndex();
 	}
+	SpiritCoreComponent* spiritCoreComp = mPlayer->nonCreateComp<SpiritCoreComponent>();
+
+	if (event.type == sf::Event::KeyPressed &&
+		event.key.code == sf::Keyboard::R)
+	{
+		spiritCoreComp->startRestoring();
+	}
+	
 	
 	if (event.type == sf::Event::MouseButtonPressed && 
-		event.mouseButton.button == sf::Mouse::Left)
+		event.mouseButton.button == sf::Mouse::Left 
+		&& (!spiritCoreComp || (!spiritCoreComp->isRestoring() && 
+		!spiritCoreComp->noSpiritCoreLeft())))
 	{
 		sf::Vector2f mousePos(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
 		sf::Vector2f entityWorldPos = mPlayer->comp<TransformableComponent>()->getWorldPosition(true);
 		
-		/*return new PlayerAttackState(mPlayer, Utility::unitVector(mousePos - entityWorldPos),
-			attackModeComp->getCurrentStringIndex());*/
-		return new PlayerLeftClawState(mPlayer);
+		return new PlayerAttackState(mPlayer, Utility::unitVector(mousePos - entityWorldPos), mPlayerStateTable,
+			attackModeComp->getCurrentStringIndex());
+		//return new PlayerLeftClawState(mPlayer);
 	}
 	if (event.type == sf::Event::MouseButtonPressed &&
-		event.mouseButton.button == sf::Mouse::Right)
+		event.mouseButton.button == sf::Mouse::Right && 
+		(!spiritCoreComp || (!spiritCoreComp->isRestoring() &&
+		!spiritCoreComp->noSpiritCoreLeft())))
 	{
 		sf::Vector2f mousePos(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
 		sf::Vector2f entityWorldPos = mPlayer->comp<TransformableComponent>()->getWorldPosition(true);
+		
+
+		return new PlayerAimRangeState(mPlayer, mPlayerStateTable);
+	}
+	/*if (event.type == sf::Event::MouseButtonPressed &&
+		event.mouseButton.button == sf::Mouse::Right)
+	{
+		/*sf::Vector2f mousePos(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
+		sf::Vector2f entityWorldPos = mPlayer->comp<TransformableComponent>()->getWorldPosition(true);
 
 		return new PlayerSpiritState(mPlayer, Utility::unitVector(mousePos - entityWorldPos));
-	}
+		return new PlayerHookState(mPlayer, mPlayerStateTable);
+	}*/
 
 	/*if (event.key.code == sf::Keyboard::Up){
 		VelocityComponent* veloComp = mPlayer->comp<VelocityComponent>();
@@ -131,6 +156,9 @@ bool PlayerIdleState::isStaminaCompEnough(StaminaComponent* staminaComp)
 
 PlayerState* PlayerIdleState::update(sf::Time dt)
 {
+	SpiritCoreComponent* spiritCoreComp = mPlayer->nonCreateComp<SpiritCoreComponent>();
+	if (spiritCoreComp->noSpiritCoreLeft())
+		spiritCoreComp->startRestoring();
 	std::string finalAnimName = "";
 
 	VelocityComponent* veloComp = mPlayer->comp<VelocityComponent>();

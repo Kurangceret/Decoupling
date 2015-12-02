@@ -6,8 +6,8 @@
 #include "PlayerIdleState.h"
 #include "StaminaComponent.h"
 
-PlayerRunningState::PlayerRunningState(Entity* entity)
-:PlayerState(entity)
+PlayerRunningState::PlayerRunningState(Entity* entity, const luabridge::LuaRef& playerStateTable)
+:PlayerState(entity, playerStateTable)
 {
 }
 
@@ -41,7 +41,7 @@ PlayerState* PlayerRunningState::processRealTimeInput(sf::Time dt,
 		velocityComp->setVelocityX(1.f);
 
 	if (!sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
-		return new PlayerIdleState(mPlayer);
+		return new PlayerIdleState(mPlayer, mPlayerStateTable);
 
 	return nullptr;
 }

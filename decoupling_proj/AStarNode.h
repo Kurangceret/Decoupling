@@ -14,7 +14,7 @@ struct AStarNode{
 	float h; // distance between currentNode and end Node
 
 	Entity *tile;  //could be null ptr, if null means the node is empty
-
+	bool isFallable;
 	sf::Vector2f pos;
 
 	std::vector<AStarNode *> adjacent;

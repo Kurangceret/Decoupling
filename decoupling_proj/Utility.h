@@ -100,7 +100,7 @@ namespace Utility{
 	{
 		float initial = toDegree(std::atan2(vector.y, vector.x));
 		if (fullArcResult && initial < 0.f)
-			initial = std::abs(initial) + 180.f;
+			initial = 360.f - std::abs(initial);
 		return initial;
 	}
 

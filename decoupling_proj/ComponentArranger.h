@@ -68,6 +68,13 @@ private:
 		luabridge::LuaRef& table);
 	void readTimerComponent(Entity* entity, lua_State* luaState,
 		luabridge::LuaRef& table);
+	void readFloatableComponent(Entity* entity, lua_State* luaState,
+		luabridge::LuaRef& table);
+	void readSpiritCoreComponent(Entity* entity, lua_State* luaState,
+		luabridge::LuaRef& table);
+	void readDestroyableComponent(Entity* entity, lua_State* luaState,
+		luabridge::LuaRef& table);
+
 
 	void arrangeChildEntityList(Entity* entity, lua_State* luaState,
 		luabridge::LuaRef& table);

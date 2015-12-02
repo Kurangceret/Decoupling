@@ -209,6 +209,19 @@ SwampMoa = {
               
       }
       
+    },
+    DestroyableComponent = {
+      isDestroyed = function(thisEntity) 
+        if(thisEntity:compHealth():getCurrentHealth() <= 0.0) then
+          return true
+        end
+        return false
+        
+      end,
+      isRemoveable = function(thisEntity)
+        return thisEntity:compDestroyable():isDestroyed()
+      end
+      
     }
 
 

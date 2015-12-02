@@ -6,6 +6,7 @@
 class PlayerAttackState :	public PlayerState{
 public:
 	PlayerAttackState(Entity* player, const sf::Vector2f& initialDir, 
+		const luabridge::LuaRef& playerStateTable,
 		const std::string& defaultAttackName = "Heavy_Attack_");
 	virtual ~PlayerAttackState();
 

@@ -4,11 +4,12 @@
 #include <vector>
 #include <string>
 
+
 class PlayerLogicSystem :	public System{
 public:
 	typedef std::unique_ptr<PlayerLogicSystem> Ptr;
 public:
-	PlayerLogicSystem(Entity* entityPlayer);
+	PlayerLogicSystem(Entity* entityPlayer, const luabridge::LuaRef& playerStateDataTable);
 	virtual ~PlayerLogicSystem();
 
 	void handleEvent(const sf::Event&,
@@ -23,5 +24,8 @@ private:
 	std::unique_ptr<PlayerState> mPlayerState;
 	Entity* mPlayer;
 	
+	luabridge::LuaRef mPlayerStateDataTable;
+
+	int mPreviousSpiritCoreNum;
 };
 

@@ -13,11 +13,15 @@
 #include "PlayerStaminaChangedEvent.h"
 #include "StaminaComponent.h"
 #include "PlayerIdleState.h"
+#include "SpiritCoreComponent.h"
+#include "SpiritCoreChangedEvent.h"
 #include <iostream>
 
-PlayerLogicSystem::PlayerLogicSystem(Entity* entityPlayer)
-:mPlayerState(new PlayerIdleState(entityPlayer)),
-mPlayer(entityPlayer)
+PlayerLogicSystem::PlayerLogicSystem(Entity* entityPlayer, const luabridge::LuaRef& playerStateDataTable)
+:mPlayerState(new PlayerIdleState(entityPlayer, playerStateDataTable)),
+mPlayer(entityPlayer),
+mPlayerStateDataTable(playerStateDataTable),
+mPreviousSpiritCoreNum(0)
 {
 	pushRequiredComponent(ComponentIdentifier::CategoryComponent);
 }
@@ -38,7 +42,7 @@ void PlayerLogicSystem::handleEvent(const sf::Event& event,
 
 
 	PlayerState* newPlayerState = mPlayerState->handleEvent(event, renderWindow);
-	checkStateValidity(newPlayerState, mPlayer);
+	//checkStateValidity(newPlayerState, mPlayer);
 
 	if (newPlayerState)
 		mPlayerState.reset(newPlayerState);
@@ -53,7 +57,7 @@ void PlayerLogicSystem::processRealTimeInput(sf::Time dt,
 		return;
 
 	PlayerState* newPlayerState =  mPlayerState->processRealTimeInput(dt, renderWindow);
-	checkStateValidity(newPlayerState, mPlayer);
+	//checkStateValidity(newPlayerState, mPlayer);
 	if (newPlayerState)
 		mPlayerState.reset(newPlayerState);
 }
@@ -68,9 +72,15 @@ void PlayerLogicSystem::processEntity(sf::Time dt, Entity* entity)
 	
 	if (!mPlayerState.get())
 		return;
+	
+	SpiritCoreComponent* spiritCoreComp = entity->nonCreateComp<SpiritCoreComponent>();
+
+	/*if (spiritCoreComp && spiritCoreComp->isRestoring())
+		mPlayer->comp<VelocityComponent>()->setSpeedIdentifier(0.7f);*/
+
 
 	PlayerState* newPlayerState = mPlayerState->update(dt);
-	checkStateValidity(newPlayerState, mPlayer);
+	//checkStateValidity(newPlayerState, mPlayer);
 	if (newPlayerState)
 		mPlayerState.reset(newPlayerState);
 
@@ -96,6 +106,25 @@ void PlayerLogicSystem::processEntity(sf::Time dt, Entity* entity)
 			EventManager::getInstance()->queueEvent(std::move(playerHpChanged));
 		}
 	}
+
+//	SpiritCoreComponent* spiritCoreComp = entity->nonCreateComp<SpiritCoreComponent>();
+	if (spiritCoreComp){
+		int previousCore = mPreviousSpiritCoreNum;
+		mPreviousSpiritCoreNum = spiritCoreComp->getCurrentSpiritCore();
+
+		if (spiritCoreComp->isRestoring() || previousCore != mPreviousSpiritCoreNum){
+			SpiritCoreChangedEvent::Ptr coreChangedEvent(new SpiritCoreChangedEvent());
+
+			coreChangedEvent->mIsRestoring = spiritCoreComp->isRestoring();
+			coreChangedEvent->mCurrentSpiritCores = mPreviousSpiritCoreNum;
+			coreChangedEvent->mCurRatioInRestoring = spiritCoreComp->getCurTimeRatioInRestoring();
+
+			EventManager::getInstance()->queueEvent(std::move(coreChangedEvent));
+		}
+	}
+
+
+
 
 	
 

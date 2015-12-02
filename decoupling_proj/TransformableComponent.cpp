@@ -138,7 +138,7 @@ void TransformableComponent::rotate(float angle)
 	mTransformable.rotate(angle);
 }
 
-void TransformableComponent::setRotate(float newAngle)
+void TransformableComponent::setRotation(float newAngle)
 {
 	mTransformable.setRotation(newAngle);
 }

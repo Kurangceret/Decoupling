@@ -94,6 +94,7 @@ void PathFinder::addNode(const sf::Vector2f& pos)
 	node->adjacent.resize(0);
 	node->tile = nullptr;
 	node->isInsideQueue = false;
+	node->isFallable = false;
 	
 	mNodes.push_back(std::move(node));
 }
@@ -287,7 +288,7 @@ std::vector<MovingNode> PathFinder::constructPath(Entity *entity, const sf::Vect
 
 		for (AStarNode* n : currentNode->adjacent){
 		
-			if (n->tile || isInsideQueue[n]  /*!isRectOverallNodeSafe(n->pos, entityRect)*/
+			if (n->tile || n->isFallable || isInsideQueue[n]  /*!isRectOverallNodeSafe(n->pos, entityRect)*/
 				|| !RayCast::castRayLinesFromRect(originForRay, entityRect, n->pos, this)
 					/*|| !isRectOverallNodeSafe(n->pos, entityRect)*/)
 			{

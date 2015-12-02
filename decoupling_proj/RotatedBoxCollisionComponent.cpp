@@ -19,7 +19,7 @@ RotatedRect RotatedBoxCollisionComponent::getTransformedRotatedRect() const
 	if (!mOwnerEntity->hasComp<TransformableComponent>())
 		return mRotatedRect;
 	
-	sf::Transform transform = mOwnerEntity->comp<TransformableComponent>()->getWorldTransform(true);
+	sf::Transform transform = mOwnerEntity->comp<TransformableComponent>()->getWorldTransform();
 	
 	RotatedRect newRect(mRotatedRect);
 

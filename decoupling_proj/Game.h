@@ -43,6 +43,7 @@ private:
 	sf::Font mFont;
 
 
+	lua_State* mLuaState;
 	MovementSystem* mMovementSystem;
 	std::vector<System::Ptr> mSystems;
 

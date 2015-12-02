@@ -5,8 +5,9 @@
 #include "StaminaComponent.h"
 #include "VelocityComponent.h"
 
-PlayerSpiritState::PlayerSpiritState(Entity* player, const sf::Vector2f& direction)
-:PlayerState(player),
+PlayerSpiritState::PlayerSpiritState(Entity* player, const sf::Vector2f& direction, 
+	const luabridge::LuaRef& playerStateTable)
+:PlayerState(player, playerStateTable),
 mSpiritDirection(direction),
 mSpiritLifeTime(player->comp<SpiritFormComponent>()->getNormalSpiritLifeTime()),
 mDelayTime(sf::seconds(player->comp<SpiritFormComponent>()->mDelayBeforeSpirit))
@@ -49,7 +50,7 @@ PlayerState* PlayerSpiritState::update(sf::Time dt)
 	if (mSpiritLifeTime.asSeconds() <= 0.0f){
 		veloComp->setVelocity(0.f, 0.f);
 		spiritComp->quitSpiritForm();
-		return new PlayerIdleState(mPlayer);
+		return new PlayerIdleState(mPlayer, mPlayerStateTable);
 	}
 	veloComp->setVelocity(mSpiritDirection);
 

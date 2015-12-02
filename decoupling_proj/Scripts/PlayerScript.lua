@@ -61,6 +61,67 @@ Player = {
         collidedCategoryComp = collidedEntity:compCategory()
         thisTransformComp = thisEntity:compTransform()
         
+        floatComp = thisEntity:compFloatable()
+        
+        if(floatComp:isFloating() and collidedCategoryComp:getCategory() & Category.Tile ~= 0) then
+          floatComp:setIsFloating(false)
+          
+        end
+        
+        if(floatComp:isFloating() and (collidedCategoryComp:getCategory() & Category.Enemy ~= 0)) then
+          
+          collidedRect = collidedEntity:compBoxCollision().mBoundingRect
+          collidedWorldPos = collidedEntity:compTransform():getWorldPosition(true)
+          thisWorldPos = thisTransformComp:getWorldPosition(true)
+          
+          thisVelocity = thisEntity:compVelocity():getVelocity()
+          fullArcDegree = EngineUtil.vectorToDegree(thisVelocity, true)
+          print(fullArcDegree)
+          --check for collidedEntity, not thisEntity
+          checkLeft = false
+          checkRight = false
+          checkTop = false
+          checkBottom = false
+          
+          if(fullArcDegree >= 45.0 and fullArcDegree <= 135.0) then
+            checkTop = true
+          end
+          
+          if(fullArcDegree >= 225.0 and fullArcDegree <= 315.0) then
+            checkBottom = true
+          end
+          
+          if(fullArcDegree >= 135.0 and fullArcDegree <= 225.0) then
+            checkRight = true
+          end
+          
+          if(fullArcDegree >= 315.0 or (fullArcDegree >= 0.0 and fullArcDegree <= 45.0)) then
+            checkLeft = true
+          end
+          
+          continueFloating = true
+          
+          if(checkTop and (thisWorldPos.y <= collidedWorldPos.y - (collidedRect.height / 2))) then
+            continueFloating = false
+          end
+          
+
+          if(checkBottom and (thisWorldPos.y >= collidedWorldPos.y + (collidedRect.height / 2))) then
+            continueFloating = false
+          end
+  
+
+          if(checkLeft and (thisWorldPos.x < collidedWorldPos.x)) then
+            continueFloating = false
+          end
+          if(checkRight and (thisWorldPos.x > collidedWorldPos.x)) then
+            continueFloating = false
+          end
+          
+                    
+          floatComp:setIsFloating(continueFloating)
+        end
+        
         if(collidedCategoryComp:getCategory() & Category.Enemy ~= 0) then
            vector = systemCollision:getCalculatedSafeOffSet(thisEntity)
            thisTransformComp:move(vector.x, vector.y)
@@ -71,7 +132,7 @@ Player = {
 		},
 
 		VelocityComponent = {
-			speed = 120,
+			speed = 110,
 			sprintSpeed = 110
 
     },
@@ -79,17 +140,24 @@ Player = {
       category = Category.Player
       
     },
-  
+    FloatableComponent = {
+      
+    },
 
 		--[[AutomaticPathComponent = {
 
 		},]]--
 
-		StaminaComponent = {
+		--[[StaminaComponent = {
 			maxStamina = 100,
-			maxStaminaRegen = 25
-		},
-
+			maxStaminaRegen = 30
+		},]]--
+    
+    SpiritCoreComponent = {
+      maxSpiritCore = 5,
+      restoreTimePerCore = 0.2
+      
+    },
 		HealthComponent = {
 			maxHealth = 50,
 			currentHealth = 50
@@ -142,6 +210,17 @@ Player = {
       normalSpiritLifeTime = 0.3,
       delayTime = 0.3,
       staminaIncrease = 25
+      
+    },
+    
+    DestroyableComponent = {
+      isDestroyed = function(thisEntity) 
+        return false
+        
+      end,
+      isRemoveable = function(thisEntity)
+        return thisEntity:compDestroyable():isDestroyed()
+      end
       
     },
     MeleeRectComponent = {
@@ -340,7 +419,7 @@ Player = {
 					name = "Axe_Attack_1",
 					slashData = {
 						{
-							angle = 90.0,
+							angle = 35.0,
 							movingPos = {0, 0},
 							swingDuration = 0.11,
 							delayDuration = 0.1
@@ -354,7 +433,7 @@ Player = {
 						},
 
 						{
-							angle = -90.0,
+							angle = -35.0,
 							movingPos = {0, 0},
 							swingDuration = 0.09,
 							delayDuration = 0.00
@@ -475,7 +554,7 @@ Player = {
             speedIdentifier = 1.0
                         
           },
-					staminaUsage = 20,
+					staminaUsage = 0,
 					damage = 6,
 					range = 60,
 					thickness = 20,
@@ -484,7 +563,39 @@ Player = {
           vulnerableDuration = 0.1,
           recoveryDuration = 0.5
 
-				}
+        },
+        {
+					name = "Ranged_Melee_Attack",
+					slashData = {
+						{
+							angle = 0.0,
+							movingPos = {0, 0},
+							swingDuration = 0.10,
+							delayDuration = 0.10
+						},
+
+						{
+							angle = 0.05,
+							movingPos = {0, 0},
+							swingDuration = 0.4,
+							delayDuration = 0.0
+						}
+
+          },
+          entityMovingData = {
+            speedIdentifier = 0.0
+                        
+          },
+					staminaUsage = 0,
+					damage = 3,
+					range = 96,
+					thickness = 15,
+					wholeDelayDuration = 0,
+					wholeSwingDuration = 0.6,
+          vulnerableDuration = 0.1,
+          recoveryDuration = 0.5
+
+        }	
 
 			}
 

@@ -8,15 +8,20 @@
 #include "VelocityComponent.h"
 #include "PlayerSideStepState.h"
 
-PlayerLeftClawState::PlayerLeftClawState(Entity* player)
-:PlayerState(player),
+const float leftClawStaminaUsage = 20.f;
+const float periodOfDecreaseStamina = 0.05f;
+
+PlayerLeftClawState::PlayerLeftClawState(Entity* player, const luabridge::LuaRef& playerStateTable)
+:PlayerState(player, playerStateTable),
 mLeftMouseIsStilllActivated(true),
 mElapsedTime(sf::Time::Zero),
-mPeriodForEachWidening(sf::seconds(0.1f)),
+mPeriodForEachWidening(sf::seconds(periodOfDecreaseStamina)),
 mIncreasedAngle(0.f),
 mMaxIncreasedAngle(45.f),
 mAttackInCommand(true)
 {
+	StaminaComponent* staminaComp = mPlayer->comp<StaminaComponent>();
+	staminaComp->decreaseCurStamina(leftClawStaminaUsage);
 }
 
 
@@ -36,10 +41,14 @@ PlayerState* PlayerLeftClawState::handleEvent(const sf::Event& event,
 PlayerState* PlayerLeftClawState::processRealTimeInput(sf::Time dt,
 	const sf::RenderWindow& renderWindow)
 {
-	if (mLeftMouseIsStilllActivated && !sf::Mouse::isButtonPressed(sf::Mouse::Left)){
+	StaminaComponent* staminaComp = mPlayer->comp<StaminaComponent>();
+	if (mLeftMouseIsStilllActivated && (!sf::Mouse::isButtonPressed(
+		sf::Mouse::Left) || staminaComp->getCurStamina() <= 0.f))
+	{
 		mLeftMouseIsStilllActivated = false;
 		mMouseLastPos = sf::Vector2f(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
 	}
+
 	MeleeRectComponent* meleeRectComp = mPlayer->comp<MeleeRectComponent>();
 
 	if (mAttackInCommand || meleeRectComp->meleeRectIsUpdating() 
@@ -65,10 +74,10 @@ PlayerState* PlayerLeftClawState::processRealTimeInput(sf::Time dt,
 		if (finalVelo == sf::Vector2f())
 			finalVelo = veloComp->getFacingDirection() * -1.f;
 
-		return new PlayerSideStepState(mPlayer, finalVelo);
+		return new PlayerSideStepState(mPlayer, finalVelo, mPlayerStateTable);
 	}
 	if (finalVelo != sf::Vector2f())
-		return new PlayerIdleState(mPlayer);
+		return new PlayerIdleState(mPlayer, mPlayerStateTable);
 
 	return nullptr;
 }
@@ -104,12 +113,12 @@ PlayerState* PlayerLeftClawState::update(sf::Time dt)
 
 	if (!mAttackInCommand && !meleeRectComp->meleeRectIsUpdating()
 		&& !meleeRectComp->isVulnerable() && !meleeRectComp->isRecovering())
-		return new PlayerIdleState(mPlayer);
+		return new PlayerIdleState(mPlayer, mPlayerStateTable);
 
 	return nullptr;
 }
 
 bool PlayerLeftClawState::isStaminaCompEnough(StaminaComponent* staminaComp)
 {
-	return staminaComp->checkDecreaseStamina(20);
+	return staminaComp->checkDecreaseStamina(leftClawStaminaUsage);
 }

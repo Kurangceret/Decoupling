@@ -3,6 +3,7 @@
 #include "HealthComponent.h"
 #include "BoxCollisionComponent.h"
 #include "TransformableComponent.h"
+#include "DestroyableComponent.h"
 #include <algorithm>
 
 std::size_t EntityManager::mCurrentEntityIncremental = 0;
@@ -179,14 +180,20 @@ std::vector<Entity*> EntityManager::getEntsByBound(const sf::FloatRect& worldBou
 
 bool EntityManager::isEntityRemoveable(Entity* entity) const
 {
-	if (entity->hasComp<CategoryComponent>() && 
+	/*if (entity->hasComp<CategoryComponent>() && 
 		entity->comp<CategoryComponent>()->getCategory() & Category::Player)
 		return false;
 
 	if (entity->hasComp<HealthComponent>()){
 		HealthComponent* healthComp = entity->comp<HealthComponent>();
 		return healthComp->getCurrentHealth() <= 0;
-	}
+	}*/
+	if (!entity->hasComp<DestroyableComponent>())
+		return false;
+
+	DestroyableComponent* destroyableComp = entity->nonCreateComp<DestroyableComponent>();
+
+	return (destroyableComp && destroyableComp->isRemoveable());
 	
-	return false;
+	//return false;
 }

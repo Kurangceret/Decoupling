@@ -100,13 +100,13 @@ void EventManager::deleteListener(EventType::ID eventId, T* ownerPointer)
 	auto findIter = mListeners.find(eventId);
 	if (findIter != mListeners.end()){
 		
-		std::vector<EventCallBackFunc>& listOfCallBack = findIter->second;
-		std::vector<EventCallBackFunc>::iterator iterC;
+		std::vector<EventCallBackFunc::Ptr>& listOfCallBack = findIter->second;
+		std::vector<EventCallBackFunc::Ptr>::iterator iterC;
 
 		std::uintptr_t address = Utility::convertPointerToAddress(ownerPointer);
 		for (iterC = listOfCallBack.begin(); iterC != listOfCallBack.end())
 		{
-			if (iterC->ownerAddress == address)
+			if (iterC->get()->ownerAddress == address)
 			{
 				iterC = listOfCallBack.erase(iterC);
 				continue;
@@ -116,12 +116,12 @@ void EventManager::deleteListener(EventType::ID eventId, T* ownerPointer)
 	}
 	auto luaFindIter = mLuaListeners.find(eventId);
 	if (luaFindIter != mLuaListeners.end()){
-		std::vector<LuaEventCallBackFunc>& listOfCallBack = luaFindIter->second;
-		std::vector<LuaEventCallBackFunc>::iterator iterC;
+		std::vector<LuaEventCallBackFunc::Ptr>& listOfCallBack = luaFindIter->second;
+		std::vector<LuaEventCallBackFunc::Ptr>::iterator iterC;
 
 		for (iterC = listOfCallBack.begin(); iterC != listOfCallBack.end())
 		{
-			if (iterC->ownerEntity == ownerPointer)
+			if (iterC->get()->ownerEntity == ownerPointer)
 			{
 				iterC = listOfCallBack.erase(iterC);
 				continue;
@@ -137,12 +137,12 @@ void EventManager::deleteListener(T* ownerPointer)
 	std::uintptr_t address = Utility::convertPointerToAddress(ownerPointer);
 
 	for (auto& mapIter : mListeners){
-		std::vector<EventCallBackFunc>& listOfCallBack = mapIter.second;
-		std::vector<EventCallBackFunc>::iterator iterC;
+		std::vector<EventCallBackFunc::Ptr>& listOfCallBack = mapIter.second;
+		std::vector<EventCallBackFunc::Ptr>::iterator iterC;
 
-		for (iterC = listOfCallBack.begin(); iterC != listOfCallBack.end())
+		for (iterC = listOfCallBack.begin(); iterC != listOfCallBack.end();)
 		{
-			if (iterC->ownerAddress == address)
+			if (iterC->get()->ownerAddress == address)
 			{
 				iterC = listOfCallBack.erase(iterC);
 				continue;

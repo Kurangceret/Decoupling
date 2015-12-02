@@ -9,10 +9,13 @@
 #include "TransformableComponent.h"
 #include "Utility.h"
 #include "PlayerSpiritState.h"
+#include "SpiritCoreComponent.h"
+#include "PlayerAimRangeState.h"
 
-PlayerAttackState::PlayerAttackState(Entity* player, const sf::Vector2f& initialDir,
+PlayerAttackState::PlayerAttackState(Entity* player, const sf::Vector2f& initialDir, 
+	const luabridge::LuaRef& playerStateTable,
 	const std::string& defaultAttackName)
-:PlayerState(player),
+:PlayerState(player, playerStateTable),
 mCurIndex(0),
 mIsAttackCommandQueue(true),
 mLatestAttackDir(initialDir),
@@ -42,8 +45,12 @@ PlayerState* PlayerAttackState::handleEvent(const sf::Event& event,
 	/*if (event.key.code == sf::Keyboard::Up)
 		mIsAttackCommandQueue = true;*/
 	
+	SpiritCoreComponent* spiritCoreComp = mPlayer->nonCreateComp<SpiritCoreComponent>();
+
 	if (event.type == sf::Event::MouseButtonPressed &&
-		event.mouseButton.button == sf::Mouse::Left)
+		event.mouseButton.button == sf::Mouse::Left 
+		&& (!spiritCoreComp || (!spiritCoreComp->isRestoring() &&
+		!spiritCoreComp->noSpiritCoreLeft())))
 	{
 		mIsAttackCommandQueue = true;
 		sf::Vector2f mousePos(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
@@ -54,13 +61,25 @@ PlayerState* PlayerAttackState::handleEvent(const sf::Event& event,
 	}
 
 	if (event.type == sf::Event::MouseButtonPressed &&
+		event.mouseButton.button == sf::Mouse::Right &&
+		(!spiritCoreComp || (!spiritCoreComp->isRestoring() &&
+		!spiritCoreComp->noSpiritCoreLeft())))
+	{
+		sf::Vector2f mousePos(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
+		sf::Vector2f entityWorldPos = mPlayer->comp<TransformableComponent>()->getWorldPosition(true);
+		
+
+		return new PlayerAimRangeState(mPlayer, mPlayerStateTable);
+	}
+
+	/*if (event.type == sf::Event::MouseButtonPressed &&
 		event.mouseButton.button == sf::Mouse::Right)
 	{
 		sf::Vector2f mousePos(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
 		sf::Vector2f entityWorldPos = mPlayer->comp<TransformableComponent>()->getWorldPosition(true);
 
-		return new PlayerSpiritState(mPlayer, Utility::unitVector(mousePos - entityWorldPos));
-	}
+		return new PlayerSpiritState(mPlayer, Utility::unitVector(mousePos - entityWorldPos), mPlayerStateTable);
+	}*/
 
 
 	return nullptr;
@@ -104,10 +123,10 @@ PlayerState* PlayerAttackState::processRealTimeInput(sf::Time dt,
 		if (finalVelo == sf::Vector2f())
 			finalVelo = veloComp->getFacingDirection() * -1.f;
 
-		return new PlayerSideStepState(mPlayer, finalVelo);
+		return new PlayerSideStepState(mPlayer, finalVelo, mPlayerStateTable);
 	}
 	if (finalVelo != sf::Vector2f())
-		return new PlayerIdleState(mPlayer);
+		return new PlayerIdleState(mPlayer, mPlayerStateTable);
 	
 
 	return nullptr;
@@ -129,7 +148,11 @@ PlayerState* PlayerAttackState::update(sf::Time dt)
 	if (mIsAttackCommandQueue && !meleeRectComp->meleeRectIsUpdating() 
 		&& !meleeRectComp->isVulnerable())
 	{
-		
+		SpiritCoreComponent* spiritCoreComp = mPlayer->nonCreateComp<SpiritCoreComponent>();
+
+		if (spiritCoreComp)
+			spiritCoreComp->decreaseSpiritCore(1);
+
 		if (mLatestAttackDir != sf::Vector2f()){
 			facingDir = mLatestAttackDir;
 			mLatestAttackDir = sf::Vector2f(0.f, 0.f);
@@ -158,7 +181,7 @@ PlayerState* PlayerAttackState::update(sf::Time dt)
 		}
 		
 		if (nextAttackName == "")
-			return new PlayerIdleState(mPlayer);
+			return new PlayerIdleState(mPlayer, mPlayerStateTable);
 		mIsAttackCommandQueue = false;
 
 		if(!meleeRectComp->startMeleeRect(facingDir, nextAttackName))
@@ -184,7 +207,7 @@ PlayerState* PlayerAttackState::update(sf::Time dt)
 	
 	if (!mIsAttackCommandQueue && !meleeRectComp->meleeRectIsUpdating()
 		&& !meleeRectComp->isVulnerable() && !meleeRectComp->isRecovering())
-		return new PlayerIdleState(mPlayer);
+		return new PlayerIdleState(mPlayer, mPlayerStateTable);
 	
 	return nullptr;
 }

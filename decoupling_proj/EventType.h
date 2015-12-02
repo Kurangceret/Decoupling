@@ -10,6 +10,7 @@ namespace EventType{
 		FireSpiritCollided,
 		CreateNewEntity,
 		SoulHookStruck,
+		SpiritCoreChanged,
 		EventTypeCount
 	};
 };

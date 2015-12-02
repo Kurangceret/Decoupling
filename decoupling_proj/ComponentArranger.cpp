@@ -26,7 +26,9 @@
 #include "SpiritFormComponent.h"
 #include "SpiritGrabberComponent.h"
 #include "TimerComponent.h"
-
+#include "FloatableComponent.h"
+#include "SpiritCoreComponent.h"
+#include "DestroyableComponent.h"
 
 ComponentArranger::ComponentArranger(GeneralData* generalData)
 :mTexturesStringManager(*generalData->getTexturesStringManager()),
@@ -51,9 +53,7 @@ void ComponentArranger::readFromLuaScript(Entity* entity,
 	}
 		
 	luaL_openlibs(luaState);
-	//if (luaL_dofile(luaState, scriptFilename.c_str()) != 0)
-		//return;
-
+	
 	lua_pcall(luaState, 0, 0, 0);
 
 	
@@ -152,6 +152,22 @@ void ComponentArranger::readFromLuaScript(Entity* entity,
 	if (!table["RotatedBoxCollisionComponent"].isNil() && table["RotatedBoxCollisionComponent"].isTable())
 		readRotatedBoxCollisionComponent(entity, luaState,
 			table["RotatedBoxCollisionComponent"].cast<luabridge::LuaRef>());
+
+	if (!table["TimerComponent"].isNil() && table["TimerComponent"].isTable())
+		readTimerComponent(entity, luaState,
+			table["TimerComponent"].cast<luabridge::LuaRef>());
+
+	if (!table["FloatableComponent"].isNil() && table["FloatableComponent"].isTable())
+		readFloatableComponent(entity, luaState,
+			table["FloatableComponent"].cast<luabridge::LuaRef>());
+
+	if (!table["SpiritCoreComponent"].isNil() && table["SpiritCoreComponent"].isTable())
+		readSpiritCoreComponent(entity, luaState,
+			table["SpiritCoreComponent"].cast<luabridge::LuaRef>());
+
+	if (!table["DestroyableComponent"].isNil() && table["DestroyableComponent"].isTable())
+		readDestroyableComponent(entity, luaState,
+			table["DestroyableComponent"].cast<luabridge::LuaRef>());
 
 	if (!table["ChildEntityList"].isNil() && table["ChildEntityList"].isTable())
 		arrangeChildEntityList(entity, luaState,
@@ -637,12 +653,12 @@ void ComponentArranger::readRotatedBoxCollisionComponent(Entity* entity, lua_Sta
 
 	rotatedBoxComp->mRotatedRect.mPoints[RotatedRect::TopLeft] = 
 		sf::Vector2f(firstIndex, secondIndex);
-	rotatedBoxComp->mRotatedRect.mPoints[RotatedRect::TopLeft] = 
+	rotatedBoxComp->mRotatedRect.mPoints[RotatedRect::TopRight] = 
 		sf::Vector2f(firstIndex + thirdIndex, secondIndex);
-	rotatedBoxComp->mRotatedRect.mPoints[RotatedRect::TopLeft] = 
+	rotatedBoxComp->mRotatedRect.mPoints[RotatedRect::BottomRight] = 
 		sf::Vector2f(firstIndex + thirdIndex, secondIndex + fourthIndex);
-	rotatedBoxComp->mRotatedRect.mPoints[RotatedRect::TopLeft] = 
-		sf::Vector2f(firstIndex, secondIndex + secondIndex);
+	rotatedBoxComp->mRotatedRect.mPoints[RotatedRect::BottomLeft] = 
+		sf::Vector2f(firstIndex, secondIndex + fourthIndex);
 }
 
 void ComponentArranger::readTimerComponent(Entity* entity, lua_State* luaState,
@@ -663,4 +679,28 @@ void ComponentArranger::readTimerComponent(Entity* entity, lua_State* luaState,
 
 		index++;
 	}
+}
+
+void ComponentArranger::readFloatableComponent(Entity* entity, lua_State* luaState,
+	luabridge::LuaRef& table)
+{
+	entity->comp<FloatableComponent>();
+}
+
+void ComponentArranger::readSpiritCoreComponent(Entity* entity, lua_State* luaState,
+	luabridge::LuaRef& table)
+{
+	SpiritCoreComponent* spiritCoreComp = entity->comp<SpiritCoreComponent>();
+	spiritCoreComp->mCurrentSpiritCore = spiritCoreComp->mMaxSpiritCore 
+		= table["maxSpiritCore"].cast<int>();
+	
+	spiritCoreComp->mRestoreTimePerCore = sf::seconds(table["restoreTimePerCore"].cast<float>());
+}
+
+void ComponentArranger::readDestroyableComponent(Entity* entity, lua_State* luaState,
+	luabridge::LuaRef& table)
+{
+	DestroyableComponent* destroyableComp = entity->comp<DestroyableComponent>();
+	destroyableComp->mLuaDestroyedFunc = std::make_unique<luabridge::LuaRef>(table["isDestroyed"]);
+	destroyableComp->mLuaRemoveableFunc = std::make_unique<luabridge::LuaRef>(table["isRemoveable"]);
 }

@@ -55,7 +55,8 @@ void HealthComponent::damage(float damage, Entity* damager)
 	mCurrentHealth -= std::abs(damage);
 	mWasHealthChanged = true;
 
-	if (damage > 0.f && mOwnerEntity->hasComp<SpriteComponent>())
+	if (damager != mOwnerEntity && damage > 0.f && 
+		mOwnerEntity->hasComp<SpriteComponent>())
 		mOwnerEntity->comp<SpriteComponent>()->beganBlink();
 	
 }

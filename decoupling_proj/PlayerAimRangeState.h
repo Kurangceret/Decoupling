@@ -1,27 +1,30 @@
 #pragma once
 #include "PlayerState.h"
-class PlayerSideStepState :	public PlayerState{
+class PlayerAimRangeState :	public PlayerState{
 public:
-	PlayerSideStepState(Entity* player, const sf::Vector2f& initialDir, 
+	PlayerAimRangeState(Entity* player, 
 		const luabridge::LuaRef& playerStateTable);
-	virtual ~PlayerSideStepState();
+	virtual ~PlayerAimRangeState();
 
 	virtual PlayerState* handleEvent(const sf::Event&,
 		const sf::RenderWindow& renderWindow);
 	virtual PlayerState* processRealTimeInput(sf::Time dt,
 		const sf::RenderWindow& renderWindow);
+
 	virtual PlayerState* update(sf::Time dt);
 
 	virtual bool isStaminaCompEnough(StaminaComponent* staminaComp);
 
-	virtual std::string getLuaTableName() const;
 private:
-	sf::Vector2f mCurrentSideStepDir;
-	sf::Time mSideStepDur;
-	sf::Time mVulnerableDur;
-	sf::Time mRecoveryDur;
-	float mStaminaUsage;
-	sf::Vector2f mNextSideStepDir;
+	sf::Time mTimeForEachRangeBuff;
+	sf::Time mElapsedTime;
+	float mEachRangeBuff;
+	float mCurrentRangeBuff;
+	float mMaximumRangeBuff;
+
+	bool mSpawnRangeMelee;
+	bool mAttackInCommand;
+	sf::Vector2f mMouseLastPos;
 
 };
 

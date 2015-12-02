@@ -1,6 +1,7 @@
 #include "MeterBar.h"
 #include "PlayerHPChangedEvent.h"
 #include "PlayerStaminaChangedEvent.h"
+#include "SpiritCoreChangedEvent.h"
 
 MeterBar::MeterBar(const sf::Color& barColor)
 {
@@ -59,5 +60,13 @@ void MeterBar::reactToChangingValue(EventBase* eventBase)
 		float maxStamina = playerStaminaChangedEvent->mMaxStamina;
 		mFillRect.setSize(sf::Vector2f(mOuterRect.getSize().x *
 			(curStamina / maxStamina), mOuterRect.getSize().y));
+	}
+	else if (eventBase->getEventType() == EventType::SpiritCoreChanged){
+		SpiritCoreChangedEvent* spiritCoreChangedEvent = dynamic_cast<SpiritCoreChangedEvent*>(eventBase);
+
+		//if (spiritCoreChangedEvent->mIsRestoring){
+			mFillRect.setSize(sf::Vector2f(mOuterRect.getSize().x *
+				spiritCoreChangedEvent->mCurRatioInRestoring, mOuterRect.getSize().y));
+		//}
 	}
 }

@@ -18,6 +18,7 @@
 #include "MeleeRectComponent.h"
 #include "MeleeRectSystem.h"
 #include "MeleeRectToBoxHandlerSystem.h"
+#include "RotatedBoxToBoxHandlerSystem.h"
 #include "EventManager.h"
 #include "ScriptAIComponent.h"
 #include "AvoidanceBoxComponent.h"
@@ -25,6 +26,8 @@
 #include "CircularMovementSystem.h"
 #include "HarmfulBoxesToBoxHandlerSystem.h"
 #include "HarmfulBoxesComponent.h"
+#include "RotatedBoxCollisionComponent.h"
+#include "SpiritCoreComponent.h"
 #include <SFML/Graphics/Text.hpp>
 #include <LTBL\Light\Light_Point.h>
 #include <LTBL\Utils.h>
@@ -52,7 +55,8 @@ mFourTree(
 mLightSystem(*generalData->getLightSystem()),
 mCamera(mWindow, mWindow.getSize().x, mWindow.getSize().y, 1.f, sf::Vector2f(
 	mTiledMap.getMapSize().x * mTiledMap.getTileSize().x, mTiledMap.getMapSize().y * mTiledMap.getTileSize().y)),
-mAvoidBoxSystem(nullptr)
+mAvoidBoxSystem(nullptr),
+mLuaState(generalData->getLuaState())
 {
 	
 	
@@ -85,10 +89,26 @@ void Game::initializeSystem()
 	mAnimationSystems.addSystem(animationSystem.get());
 	mSystems.push_back(std::move(animationSystem));
 
-	PlayerLogicSystem::Ptr playerLogicSystem(new PlayerLogicSystem(mPlayer));
-	mGameLogicSystems.addSystem(playerLogicSystem.get());
-	mPlayerLogicSystem = playerLogicSystem.get();
-	mSystems.push_back(std::move(playerLogicSystem));
+	
+	if (luaL_dofile(mLuaState, std::string(scriptDir + 
+		"PlayerStateDataScript.lua").c_str()) == 0)
+	{
+		luaL_openlibs(mLuaState);
+
+		lua_pcall(mLuaState, 0, 0, 0);
+
+		luabridge::LuaRef luaRef = luabridge::getGlobal(mLuaState, "PlayerStates");
+		
+		PlayerLogicSystem::Ptr playerLogicSystem(new PlayerLogicSystem(mPlayer, luaRef));
+		mGameLogicSystems.addSystem(playerLogicSystem.get());
+		mPlayerLogicSystem = playerLogicSystem.get();
+		mSystems.push_back(std::move(playerLogicSystem));
+	}
+	else{
+		std::cout << lua_tostring(mLuaState, -1) << std::endl;
+	}
+
+
 
 	AutomaticMovementSystem::Ptr automaticMoveSystem(new AutomaticMovementSystem());
 	mMovementSystems.addSystem(automaticMoveSystem.get());
@@ -127,6 +147,10 @@ void Game::initializeSystem()
 	//mCollisionHandlerSystems.addSystem(meleeRectToBoxHandlerSystem.get());
 	mMeleeRectToBoxHandlerSystem = meleeRectToBoxHandlerSystem.get();
 	mSystems.push_back(std::move(meleeRectToBoxHandlerSystem));
+
+	RotatedBoxToBoxHandlerSystem::Ptr rotatedBoxToBoxHandlerSystem(new RotatedBoxToBoxHandlerSystem());
+	mCollisionHandlerSystems.addSystem(rotatedBoxToBoxHandlerSystem.get());
+	mSystems.push_back(std::move(rotatedBoxToBoxHandlerSystem));
 }
 
 void Game::draw()
@@ -150,6 +174,8 @@ void Game::draw()
 		
 		if (entity->hasComp<HarmfulBoxesComponent>())
 			entity->comp<HarmfulBoxesComponent>()->drawHarmfulBoxes(mWindow);
+		if (entity->hasComp<RotatedBoxCollisionComponent>())
+			Utility::drawRotatedRect(mWindow, &entity->comp<RotatedBoxCollisionComponent>()->getTransformedRotatedRect(), sf::Color::Black);
 
 		if (entity->hasComp<AutomaticPathComponent>()){
 			//entity->comp<AutomaticPathComponent>()->drawAutomaticPaths(mWindow);
@@ -192,7 +218,8 @@ void Game::draw()
 
 void Game::handleEvent(const sf::Event& event)
 {
-	mPlayerLogicSystem->handleEvent(event, mWindow);
+	if (mPlayerLogicSystem)
+		mPlayerLogicSystem->handleEvent(event, mWindow);
 }
 
 
@@ -227,11 +254,17 @@ void Game::update(sf::Time dt)
 	std::vector<Entity*> individualCheckingEntities;
 	for (auto& entity : mCurEntitiesList){
 		if (!entity->hasComp<VelocityComponent>() 
-			|| !entity->hasComp<BoxCollisionComponent>())
+			|| (!entity->hasComp<BoxCollisionComponent>() &&
+			!entity->hasComp<RotatedBoxCollisionComponent>()))
 			continue;
 
 		individualCheckingEntities.clear();
-		mFourTree.getObjects(individualCheckingEntities, entity);
+
+		if (entity->hasComp<BoxCollisionComponent>())
+			mFourTree.getObjects(individualCheckingEntities, entity);
+		else if (entity->hasComp<RotatedBoxCollisionComponent>())
+			mFourTree.getObjects(individualCheckingEntities, 
+				entity->comp<RotatedBoxCollisionComponent>()->getTransformedRotatedRect());
 
 		mCollisionHandlerSystems.handleEntityWithItsGroup(entity, dt, individualCheckingEntities);
 		if (mAvoidBoxSystem)
@@ -271,7 +304,7 @@ void Game::updateCommonSystem(sf::Time dt)
 {
 	for (auto& entity : mCurEntitiesList){
 		//mMeleeRectSystem->update(dt, entity);
-		mGameLogicSystems.update(entity, dt);
+		
 
 		if (entity->hasComp<SpriteComponent>())
 			entity->comp<SpriteComponent>()->updateBlinkStatus(dt);
@@ -285,9 +318,13 @@ void Game::updateCommonSystem(sf::Time dt)
 		if (entity->hasComp<LightPointComponent>())
 			entity->comp<LightPointComponent>()->updateLightCenter(dt, mWindow.getSize());
 
+		if (entity->hasComp<SpiritCoreComponent>())
+			entity->comp<SpiritCoreComponent>()->updateRestoreStatus(dt);
+
 		if (entity->hasComp<HarmfulBoxesComponent>())
 			entity->comp<HarmfulBoxesComponent>()->updateHarmedEntityData(dt);
 
+		mGameLogicSystems.update(entity, dt);
 		mMovementSystems.update(entity, dt);
 		mMeleeRectSystem->update(dt, entity);
 		mAnimationSystems.update(entity, dt);
@@ -315,6 +352,6 @@ void Game::processRealTimeInput(sf::Time dt)
 {
 	if (!mPlayer)
 		return;
-
-	mPlayerLogicSystem->processRealTimeInput(dt, mWindow);
+	if (mPlayerLogicSystem)
+		mPlayerLogicSystem->processRealTimeInput(dt, mWindow);
 }

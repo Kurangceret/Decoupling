@@ -11,6 +11,7 @@ public:
 	RotatedBoxCollisionComponent(Entity* entity);
 	virtual ~RotatedBoxCollisionComponent();
 
+	
 	RotatedRect getTransformedRotatedRect() const;
 private:
 	RotatedRect mRotatedRect;

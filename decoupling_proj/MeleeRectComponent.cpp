@@ -31,7 +31,8 @@ mCurrentMoveSetName(""),
 mNowIsCollideable(false),
 mCurrentRecoveryDur(sf::Time::Zero),
 mCurrentVulnerableDur(sf::Time::Zero),
-mStartEntityMovingData(false)
+mStartEntityMovingData(false),
+mCurrentAdditionalRange(0.f)
 {
 	mIdentifier = ComponentIdentifier::MeleeRectComponent;
 }
@@ -148,7 +149,8 @@ bool MeleeRectComponent::startMeleeRectScript(const sf::Vector2f& direction,
 }
 
 bool MeleeRectComponent::startMeleeRect(const sf::Vector2f& direction,
-	const std::string& movementSetName, float additionalRelativeAngle)
+	const std::string& movementSetName, float additionalRelativeAngle,
+	float additionalRange)
 {
 	if (mAngleUpdater.isUpdating() || direction == sf::Vector2f())
 		return false;
@@ -179,6 +181,7 @@ bool MeleeRectComponent::startMeleeRect(const sf::Vector2f& direction,
 	mCurrentVulnerableDur = movementSetData.vulnerableDur;
 	finalAnglePosList.resize(movementSetData.slashes.size());
 
+	mCurrentAdditionalRange = additionalRange;
 	float degreeFromDir = Utility::vectorToDegree(direction, false);
 	float range = movementSetData.range;
 
@@ -258,7 +261,7 @@ void MeleeRectComponent::calculateMeleeRect()
 	//sf::Vector2f entityWorldPos = transformComp->getTransformWithOrigin() * sf::Vector2f();
 	//transformComp->getWorldPosition();
 
-	float range = movementSetData.range;
+	float range = movementSetData.range + mCurrentAdditionalRange;
 
 	/*sf::Transform originedTransform;
 	originedTransform.translate(entityWorldPos);

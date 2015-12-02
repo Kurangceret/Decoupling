@@ -28,9 +28,11 @@
 #include "HealthComponent.h"
 #include "SpiritFormComponent.h"
 #include "TimerComponent.h"
+#include "DestroyableComponent.h"
 #include "PathFinder.h"
 #include "Utility.h"
 #include "RayCast.h"
+#include "FloatableComponent.h"
 
 LoadingTask::LoadingTask(GeneralData* generalData)
 : mThread(&LoadingTask::runTask, this),
@@ -240,7 +242,7 @@ void LoadingTask::initializeLayerMap(const std::string& layer)
 				gameObjAdder.addTile(layer, pos, rect, tileSetId);
 				break;
 			case GraphicsType::Vertex:
-				gameObjAdder.addVertexNode(layer, pos, rect, tileSetId);
+				gameObjAdder.addVertexNode(layer, pos, rect, tileSetId, tileId);
 				break;
 			case GraphicsType::Spider:
 				gameObjAdder.addSpider(layer, pos, rect, tileSetId);
@@ -520,6 +522,7 @@ void LoadingTask::bindLogicsToLuaScript()
 		.addFunction("queueEntityScript", &CreateNewEntityEvent::queueEntityScript)
 		.endClass()
 		.deriveClass<SoulHookStruckEvent, EventBase>("SoulHookStruckEvent")
+		.addConstructor<void(*)(void)>()
 		.addData("mHookLatestPos", &SoulHookStruckEvent::mHookLatestPos)
 		.addData("mCollidedEntityCategory", &SoulHookStruckEvent::mCollidedEntityCategory)
 		.endClass()
@@ -577,6 +580,8 @@ void LoadingTask::bindLogicsToLuaScript()
 		.addFunction("compSpiritForm", &Entity::comp<SpiritFormComponent>)
 		.addFunction("compScriptUpdate", &Entity::comp<ScriptUpdateComponent>)
 		.addFunction("compTimer", &Entity::comp<TimerComponent>)
+		.addFunction("compFloatable", &Entity::comp<FloatableComponent>)
+		.addFunction("compDestroyable", &Entity::comp<DestroyableComponent>)
 		.endClass();
 
 	luabridge::getGlobalNamespace(luaState)
@@ -665,6 +670,8 @@ void LoadingTask::bindLogicsToLuaScript()
 		.addFunction("getWorldPosition", &TransformableComponent::getWorldPosition)
 		.addFunction("setPosition", &TransformableComponent::setScriptPosition)
 		.addFunction("move", &TransformableComponent::moveScript)
+		.addFunction("rotate", &TransformableComponent::rotate)
+		.addFunction("setRotation", &TransformableComponent::setRotation)
 		.endClass();
 
 	luabridge::getGlobalNamespace(luaState)
@@ -705,6 +712,17 @@ void LoadingTask::bindLogicsToLuaScript()
 	luabridge::getGlobalNamespace(luaState)
 		.beginClass<ScriptUpdateComponent>("ScriptUpdateComponent")
 		.addFunction("getMemberVariables", &ScriptUpdateComponent::getScriptMemberVariables)
+		.endClass();
+
+	luabridge::getGlobalNamespace(luaState)
+		.beginClass<FloatableComponent>("FloatableComponent")
+		.addFunction("setIsFloating", &FloatableComponent::setIsFloating)
+		.addFunction("isFloating", &FloatableComponent::isFloating)
+		.endClass();
+
+	luabridge::getGlobalNamespace(luaState)
+		.beginClass<DestroyableComponent>("DestroyableComponent")
+		.addFunction("isDestroyed", &DestroyableComponent::isDestroyed)
 		.endClass();
 	/*Component classes end here~*/
 

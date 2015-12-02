@@ -68,7 +68,8 @@ public:
 		std::string& movementSetName);
 
 	bool startMeleeRect(const sf::Vector2f& direction, 
-		const std::string& movementSetName, float additionalRelativeAngle = 0.f);
+		const std::string& movementSetName, float additionalRelativeAngle = 0.f,
+		float additionalRange = 0.f);
 
 	bool startMeleeRectScript(const sf::Vector2f& direction,
 		const std::string& movementSetName);
@@ -110,7 +111,7 @@ private:
 	std::string mCurrentMoveSetName;
 	sf::Time mCurrentVulnerableDur;
 	sf::Time mCurrentRecoveryDur;
-
+	float mCurrentAdditionalRange;
 	//will be called the mRotatedRect collided with certain entity collision
 	EntityHandler mEntityHandler;
 

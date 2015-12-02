@@ -2,7 +2,7 @@
 #include "PlayerState.h"
 class PlayerLeftClawState :	public PlayerState{
 public:
-	PlayerLeftClawState(Entity* player);
+	PlayerLeftClawState(Entity* player, const luabridge::LuaRef& playerStateTable);
 	virtual ~PlayerLeftClawState();
 
 	virtual PlayerState* handleEvent(const sf::Event&,
@@ -13,6 +13,7 @@ public:
 	virtual PlayerState* update(sf::Time dt);
 
 	virtual bool isStaminaCompEnough(StaminaComponent* staminaComp);
+
 
 private:
 	bool mLeftMouseIsStilllActivated;

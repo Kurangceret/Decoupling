@@ -2,7 +2,7 @@
 #include "PlayerState.h"
 class PlayerRunningState :	public PlayerState{
 public:
-	PlayerRunningState(Entity* entity);
+	PlayerRunningState(Entity* entity, const luabridge::LuaRef& playerStateTable);
 	virtual ~PlayerRunningState();
 
 	virtual PlayerState* handleEvent(const sf::Event&,

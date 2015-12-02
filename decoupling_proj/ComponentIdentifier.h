@@ -31,6 +31,8 @@ namespace ComponentIdentifier{
 		SpritFormComponent = 1 << 23,
 		DestroyableComponent = 1 << 24,
 		TimerComponent = 1 << 25,
+		FloatableComponent = 1 << 26,
+		SpiritCoreComponent = 1 << 27,
 		CollisionComponent = BoxCollisionComponent | CircleCollisionComponent | RotatedBoxCollisionComponent,
 		DisplayComponent = SpriteComponent | TextDisplayComponent,
 		ComponentCounts

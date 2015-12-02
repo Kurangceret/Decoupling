@@ -61,6 +61,12 @@
     <Filter Include="Source Files\TiledMap">
       <UniqueIdentifier>{13b1be7c-2997-4a72-b5c1-9e2bcf610cac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Gui">
+      <UniqueIdentifier>{8b647952-33bc-4b5e-b7da-06f8076e08f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Gui">
+      <UniqueIdentifier>{063686e0-5c06-4a15-a670-e9d765aa903a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -198,9 +204,6 @@
     <ClCompile Include="GuiGameState.cpp">
       <Filter>Source Files\WindowState</Filter>
     </ClCompile>
-    <ClCompile Include="MeterBar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EventBase.cpp">
       <Filter>Source Files\Event</Filter>
     </ClCompile>
@@ -293,9 +296,6 @@
     </ClCompile>
     <ClCompile Include="StaminaContainerComponent.cpp">
       <Filter>Source Files\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="ContainerBar.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PlayerAttackState.cpp">
       <Filter>Source Files\PlayerState</Filter>
@@ -393,8 +393,32 @@
     <ClCompile Include="SpiritGrabberComponent.cpp">
       <Filter>Source Files\Component</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerHookState.cpp">
+    <ClCompile Include="FloatableComponent.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RotatedBoxToBoxHandlerSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerHookState.cpp">
+      <Filter>Source Files\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="SpiritCoreComponent.cpp">
+      <Filter>Source Files\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="SpiritCoreChangedEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CircleBar.cpp">
+      <Filter>Source Files\Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="ContainerBar.cpp">
+      <Filter>Source Files\Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="MeterBar.cpp">
+      <Filter>Source Files\Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerAimRangeState.cpp">
+      <Filter>Source Files\PlayerState</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -566,9 +590,6 @@
     <ClInclude Include="StateIdentifier.h">
       <Filter>Header Files\WindowState</Filter>
     </ClInclude>
-    <ClInclude Include="MeterBar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EventBase.h">
       <Filter>Header Files\Event</Filter>
     </ClInclude>
@@ -668,9 +689,6 @@
     <ClInclude Include="StaminaContainerComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ContainerBar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PlayerAttackState.h">
       <Filter>Header Files\PlayerState</Filter>
     </ClInclude>
@@ -761,8 +779,32 @@
     <ClInclude Include="SpiritGrabberComponent.h">
       <Filter>Header Files\Component</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerHookState.h">
+    <ClInclude Include="FloatableComponent.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RotatedBoxToBoxHandlerSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerHookState.h">
+      <Filter>Header Files\PlayerState</Filter>
+    </ClInclude>
+    <ClInclude Include="SpiritCoreComponent.h">
+      <Filter>Header Files\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="SpiritCoreChangedEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeterBar.h">
+      <Filter>Header Files\Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="ContainerBar.h">
+      <Filter>Header Files\Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="CircleBar.h">
+      <Filter>Header Files\Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerAimRangeState.h">
+      <Filter>Header Files\PlayerState</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

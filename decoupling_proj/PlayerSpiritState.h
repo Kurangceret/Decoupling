@@ -5,7 +5,7 @@
 
 class PlayerSpiritState :	public PlayerState{
 public:
-	PlayerSpiritState(Entity* player, const sf::Vector2f& direction);
+	PlayerSpiritState(Entity* player, const sf::Vector2f& direction, const luabridge::LuaRef& playerStateTable);
 	virtual ~PlayerSpiritState();
 
 	virtual PlayerState* handleEvent(const sf::Event&,

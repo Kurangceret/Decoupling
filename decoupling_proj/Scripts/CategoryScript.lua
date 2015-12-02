@@ -36,7 +36,7 @@ Category.SolidMovingEntity = Category.Enemy | Category.Player | Category.Project
 Category.SolidEntity = Category.Tile | Category.SolidMovingEntity
 
 
-
+--print(Category.Enemy & Category.Layer)
 
 --[[CombinedCategory = {
   SolidMovingEntity = Category.Spider | Category.Player |  Category.SwampMoa,

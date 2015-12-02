@@ -9,20 +9,43 @@
 #include "TransformableComponent.h"
 #include "Utility.h"
 #include "PlayerSpiritState.h"
+#include "SpiritCoreComponent.h"
+#include "CreateNewEntityEvent.h"
+#include "BoxCollisionComponent.h"
+#include "HealthComponent.h"
+#include "EventManager.h"
+#include "Constant.h"
 
-const float sideStepDur = 0.1f;
+/*const float sideStepDur = 0.15f;
 const float vulnerableDur = 0.2f;
 const float recoveryDur = 0.0f;
-const float staminaUsage = 20.f;
+const float staminaUsage = 20.f;*/
 
-PlayerSideStepState::PlayerSideStepState(Entity* player, const sf::Vector2f& initialDir)
-:PlayerState(player),
+float sideStepDur = 0.0f;
+float vulnerableDur = 0.0f;
+float recoveryDur = 0.0f;
+
+PlayerSideStepState::PlayerSideStepState(Entity* player, const sf::Vector2f& initialDir, 
+	const luabridge::LuaRef& playerStateTable)
+:PlayerState(player, playerStateTable),
 mCurrentSideStepDir(0.f, 0.f),
-mSideStepDur(sf::seconds(sideStepDur)),
-mRecoveryDur(sf::seconds(recoveryDur)),
-mVulnerableDur(sf::seconds(vulnerableDur)),
-mNextSideStepDir(initialDir)
+mSideStepDur(/*sf::seconds(sideStepDur)*/),
+mRecoveryDur(/*sf::seconds(recoveryDur)*/),
+mVulnerableDur(/*sf::seconds(vulnerableDur)*/),
+mNextSideStepDir(initialDir),
+mStaminaUsage(0.f)
 {
+	luabridge::LuaRef curT = playerStateTable[getLuaTableName()];
+	mSideStepDur = sf::seconds(curT["sideStepDur"].cast<float>());
+	sideStepDur = mSideStepDur.asSeconds();
+
+	mVulnerableDur = sf::seconds(curT["vulnerableDur"].cast<float>());
+	vulnerableDur = mVulnerableDur.asSeconds();
+
+	mRecoveryDur = sf::seconds(curT["recoveryDur"].cast<float>());
+	recoveryDur = mRecoveryDur.asSeconds();
+
+	mStaminaUsage = curT["staminaUsage"].cast<float>();
 }
 
 
@@ -30,6 +53,10 @@ PlayerSideStepState::~PlayerSideStepState()
 {
 }
 
+std::string PlayerSideStepState::getLuaTableName() const
+{
+	return "PlayerSideStepState";
+}
 
 PlayerState* PlayerSideStepState::handleEvent(const sf::Event& event,
 	const sf::RenderWindow& renderWindow)
@@ -49,9 +76,11 @@ PlayerState* PlayerSideStepState::handleEvent(const sf::Event& event,
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 			mNextSideStepDir.x = 1.f;
 	}
-	
+
+	SpiritCoreComponent* spiritCoreComp = mPlayer->nonCreateComp<SpiritCoreComponent>();
 	if (event.type == sf::Event::MouseButtonPressed &&
-		event.mouseButton.button == sf::Mouse::Left)
+		event.mouseButton.button == sf::Mouse::Left && (!spiritCoreComp || (!spiritCoreComp->isRestoring() &&
+		!spiritCoreComp->noSpiritCoreLeft())))
 	{
 		VelocityComponent* veloComp = mPlayer->comp<VelocityComponent>();
 		veloComp->setSpeedIdentifier(1.f);
@@ -61,18 +90,18 @@ PlayerState* PlayerSideStepState::handleEvent(const sf::Event& event,
 		sf::Vector2f mousePos(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
 		sf::Vector2f entityWorldPos = mPlayer->comp<TransformableComponent>()->getWorldPosition(true);
 
-		return new PlayerAttackState(mPlayer, Utility::unitVector(mousePos - entityWorldPos),
+		return new PlayerAttackState(mPlayer, Utility::unitVector(mousePos - entityWorldPos), mPlayerStateTable,
 			attackModeComp->getCurrentStringIndex());
 	}
 	
-	if (event.type == sf::Event::MouseButtonPressed &&
+	/*if (event.type == sf::Event::MouseButtonPressed &&
 		event.mouseButton.button == sf::Mouse::Right)
 	{
 		sf::Vector2f mousePos(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
 		sf::Vector2f entityWorldPos = mPlayer->comp<TransformableComponent>()->getWorldPosition(true);
 
-		return new PlayerSpiritState(mPlayer, Utility::unitVector(mousePos - entityWorldPos));
-	}
+		return new PlayerSpiritState(mPlayer, Utility::unitVector(mousePos - entityWorldPos), mPlayerStateTable);
+	}*/
 
 	/*if (event.key.code == sf::Keyboard::Up){
 		VelocityComponent* veloComp = mPlayer->comp<VelocityComponent>();
@@ -111,7 +140,7 @@ PlayerState* PlayerSideStepState::processRealTimeInput(sf::Time dt,
 
 bool PlayerSideStepState::isStaminaCompEnough(StaminaComponent* staminaComp)
 {
-	return staminaComp->checkDecreaseStamina(staminaUsage);
+	return staminaComp->checkDecreaseStamina(mStaminaUsage);
 }
 
 PlayerState* PlayerSideStepState::update(sf::Time dt)
@@ -122,7 +151,7 @@ PlayerState* PlayerSideStepState::update(sf::Time dt)
 	if (mCurrentSideStepDir != sf::Vector2f() && mSideStepDur.asSeconds() > 0.f)
 	{
 		veloComp->setVelocity(mCurrentSideStepDir, false);
-		veloComp->setSpeedIdentifier(4.f);
+		veloComp->setSpeedIdentifier(3.5f);
 		return nullptr;
 	}
 	mCurrentSideStepDir = sf::Vector2f();
@@ -137,12 +166,13 @@ PlayerState* PlayerSideStepState::update(sf::Time dt)
 	if (mCurrentSideStepDir == sf::Vector2f() && mNextSideStepDir != sf::Vector2f()){
 		StaminaComponent* staminaComp = mPlayer->nonCreateComp<StaminaComponent>();
 
-		if (staminaComp && !staminaComp->checkDecreaseStamina(staminaUsage)){
+		if (staminaComp && !staminaComp->checkDecreaseStamina(mStaminaUsage)){
 			mNextSideStepDir = sf::Vector2f();
 			return nullptr;
 		}
-
-		staminaComp->decreaseCurStamina(staminaUsage, true);
+		if (staminaComp)
+			staminaComp->decreaseCurStamina(mStaminaUsage, true);
+		SpiritCoreComponent* spiritCoreComp = mPlayer->nonCreateComp<SpiritCoreComponent>();
 
 		mSideStepDur = sf::seconds(sideStepDur);
 		mRecoveryDur = sf::seconds(recoveryDur);
@@ -151,6 +181,40 @@ PlayerState* PlayerSideStepState::update(sf::Time dt)
 		mCurrentSideStepDir = mNextSideStepDir;
 		mNextSideStepDir = sf::Vector2f();
 
+		if (spiritCoreComp && spiritCoreComp->noSpiritCoreLeft()){
+			CreateNewEntityEvent::Ptr createEntitiesEvent(new CreateNewEntityEvent());
+
+			QueueEntityScriptData::EngineInitializeFunc initializeFunc;
+			sf::Vector2f mainReverseDir = Utility::unitVector(mCurrentSideStepDir * -1.f);
+
+			sf::Vector2f playerWorldPos = mPlayer->comp<TransformableComponent>()->getWorldPosition(true);
+			BoxCollisionComponent* boxComp = mPlayer->comp<BoxCollisionComponent>();
+			sf::Vector2f playerBoxSize(boxComp->mBoundingRect.width, boxComp->mBoundingRect.height);
+
+			playerWorldPos += sf::Vector2f((playerBoxSize.x + 5.f) * mainReverseDir.x,
+				(playerBoxSize.y + 5.f) * mainReverseDir.y);
+
+			initializeFunc = [mainReverseDir, playerWorldPos](Entity* newEntity){
+				float finalAngle = Utility::vectorToDegree(mainReverseDir, false) +
+					(static_cast<float>(Utility::randomRange(0, 181)) - 90.f);
+				sf::Vector2f finalDir = Utility::degreeToVector(finalAngle);
+				newEntity->comp<VelocityComponent>()->setVelocity(finalDir);
+
+				newEntity->comp<TransformableComponent>()->setPosition(playerWorldPos);
+			};
+
+			int selfDamage = 2;
+			for (int i = 0; i < selfDamage; i++)
+				createEntitiesEvent->queueEntityFromEngine(
+				"Foreground", scriptDir + "HealthSpiritScript.lua",
+				"HealthSpirit", &initializeFunc);
+
+			mPlayer->comp<HealthComponent>()->damage(selfDamage, mPlayer);
+			EventManager::getInstance()->queueEvent(std::move(createEntitiesEvent));
+		}
+		else if (spiritCoreComp){
+			spiritCoreComp->decreaseSpiritCore(1);
+		}
 		//return new PlayerSideStepState(mPlayer, mNextSideStepDir);
 		return nullptr;
 	}
@@ -162,5 +226,5 @@ PlayerState* PlayerSideStepState::update(sf::Time dt)
 
 
 	veloComp->setSpeedIdentifier(1.f);
-	return new PlayerIdleState(mPlayer);
+	return new PlayerIdleState(mPlayer, mPlayerStateTable);
 }

@@ -35,7 +35,7 @@ public:
 	void move(const sf::Vector2f& v);
 
 	void rotate(float angle);
-	void setRotate(float newAngle);
+	void setRotation(float newAngle);
 private:
 	sf::Transformable mTransformable;
 };

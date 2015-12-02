@@ -24,13 +24,21 @@ SoulHook = {
        --first two is the top left position if aligned like a normal bounding rect
       rotatedRect = {0, 0, frameSize[1], frameSize[2]},
       collisionReactor = function(thisEntity, collidedEntity, systemCollision)
-        if(collidedEntity:compCategory:getCategory() & Category.Tile ~= 0)  then
+        
+        if(thisEntity:compHealth():getCurrentHealth() <= 0.0) then
           return
         end
+        
+        if(collidedEntity:compCategory():getCategory() & Category.Tile == 0)  then
+          return
+        end
+        
         soulHookStruckEvent = Event.SoulHookStruckEvent()
         soulHookStruckEvent.mHookLatestPos = thisEntity:compTransform():getWorldPosition(true)
         soulHookStruckEvent.mCollidedEntityCategory = collidedEntity:compCategory():getCategory()
         EventManager.getInstance():queueEvent(soulHookStruckEvent)
+        
+        thisEntity:compHealth():damage(1, thisEntity)
       end
       
       
@@ -55,6 +63,9 @@ SoulHook = {
         if(timerComp:isTimerElapsed("Hooking_Time")) then
           thisEntity:compVelocity():setVelocity(0.0, 0.0)
           thisEntity:compHealth():damage(1, thisEntity)
+          
+          soulHookStruckEvent = Event.SoulHookStruckEvent()
+          EventManager.getInstance():queueEvent(soulHookStruckEvent)
           return
         end
         timerComp:updateTimer("Hooking_Time", dt)
@@ -75,7 +86,7 @@ SoulHook = {
 		},]]--
 
 		VelocityComponent = {
-			speed = 400,
+			speed = 500,
 			sprintSpeed = 110
 
     },
@@ -83,16 +94,25 @@ SoulHook = {
 			maxHealth = 1,
 			currentHealth = 1
 		},
-		--[[ScriptAIComponent = {
-			AIScriptDir = AIScriptDir .. "SpiderAIScript3.lua",
-      tableName = "Spider"
-
-    },]]--
+    
     CategoryComponent = {
       category = Category.SoulHook
       
     },
     TextDisplayComponent = {
+      
+    },
+    DestroyableComponent = {
+      isDestroyed = function(thisEntity) 
+        if(thisEntity:compHealth():getCurrentHealth() <= 0.0) then
+          return true
+        end
+        return false
+        
+      end,
+      isRemoveable = function(thisEntity)
+        return thisEntity:compDestroyable():isDestroyed()
+      end
       
     }--[[, 
     HarmfulBoxesComponent = {

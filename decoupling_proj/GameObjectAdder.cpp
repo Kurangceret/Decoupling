@@ -35,6 +35,7 @@ mGeneralData(generalData)
 
 GameObjectAdder::~GameObjectAdder()
 {
+	EventManager::getInstance()->deleteListener(this);
 }
 
 
@@ -65,8 +66,19 @@ void GameObjectAdder::addTile(const std::string& layer, const sf::Vector2f& pos,
 }
 
 void GameObjectAdder::addVertexNode(const std::string& layer, const sf::Vector2f& pos,
-	const sf::IntRect& intRect, int tileSetId)
+	const sf::IntRect& intRect, int tileSetId, int tileId)
 {
+	std::string value = mTiledMap.propertyKeyToValue(tileSetId, tileId, "IsFallable");
+	if (value != ""){
+
+
+		int boolVal = static_cast<int>(std::stoi(value));
+		AStarNode* curTileNode = PathFinder::getInstance()->sceneToGraph(pos);
+
+		if (boolVal == 1)
+			curTileNode->isFallable = true;
+	}
+
 	std::vector<Entity*> vertexNodes;
 	vertexNodes = mEntityManager.getEntitiesByComponentLayer(ComponentIdentifier::VertexNodeComponent, layer);
 		
@@ -84,6 +96,10 @@ void GameObjectAdder::addVertexNode(const std::string& layer, const sf::Vector2f
 		tileSetId);
 	vertexNode->comp<VertexNodeComponent>()->addTile(pos, intRect);
 	vertexNode->comp<CategoryComponent>()->setCategory(Category::VertexNode);
+
+	
+
+	
 }
 
 void GameObjectAdder::addSpider(const std::string& layer, const sf::Vector2f& pos,

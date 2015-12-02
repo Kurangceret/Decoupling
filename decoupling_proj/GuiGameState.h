@@ -2,6 +2,7 @@
 #include "StateStack.h"
 #include "MeterBar.h"
 #include "ContainerBar.h"
+#include "CircleBar.h"
 
 class GuiGameState :public State{
 public:
@@ -17,5 +18,8 @@ private:
 	//MeterBar mStaminaBar;
 	ContainerBar mStaminaContainersBar;
 	sf::RenderWindow& mWindow;
+
+	CircleBar mSpiritCoresCircle;
+	MeterBar mRestoringSpiritBar;
 };
 
