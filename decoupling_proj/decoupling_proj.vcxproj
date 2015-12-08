@@ -163,6 +163,8 @@
     <ClCompile Include="AttackModeComponent.cpp" />
     <ClCompile Include="AvoidanceBoxComponent.cpp" />
     <ClCompile Include="AvoidanceBoxSystem.cpp" />
+    <ClCompile Include="BuffableComponent.cpp" />
+    <ClCompile Include="BuffScript.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CircleBar.cpp" />
     <ClCompile Include="CircularMovementSystem.cpp" />
@@ -170,6 +172,9 @@
     <ClCompile Include="ContainerBar.cpp" />
     <ClCompile Include="CreateNewEntityEvent.cpp" />
     <ClCompile Include="DestroyableComponent.cpp" />
+    <ClCompile Include="EntityChildrenComponent.cpp" />
+    <ClCompile Include="EntityGotDamagedEvent.cpp" />
+    <ClCompile Include="FallingSystem.cpp" />
     <ClCompile Include="FireSpiritCollidedEvent.cpp" />
     <ClCompile Include="FloatableComponent.cpp" />
     <ClCompile Include="HarmfulBoxesComponent.cpp" />
@@ -282,6 +287,8 @@
     <ClInclude Include="AttackModeComponent.h" />
     <ClInclude Include="AvoidanceBoxComponent.h" />
     <ClInclude Include="AvoidanceBoxSystem.h" />
+    <ClInclude Include="BuffableComponent.h" />
+    <ClInclude Include="BuffScript.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CircleBar.h" />
     <ClInclude Include="CircularMovementSystem.h" />
@@ -289,6 +296,9 @@
     <ClInclude Include="ContainerBar.h" />
     <ClInclude Include="CreateNewEntityEvent.h" />
     <ClInclude Include="DestroyableComponent.h" />
+    <ClInclude Include="EntityChildrenComponent.h" />
+    <ClInclude Include="EntityGotDamagedEvent.h" />
+    <ClInclude Include="FallingSystem.h" />
     <ClInclude Include="FireSpiritCollidedEvent.h" />
     <ClInclude Include="FloatableComponent.h" />
     <ClInclude Include="HarmfulBoxesComponent.h" />

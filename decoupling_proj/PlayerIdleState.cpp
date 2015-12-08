@@ -15,6 +15,9 @@
 #include "PlayerHookState.h"
 #include "SpiritCoreComponent.h"
 #include "PlayerAimRangeState.h"
+#include "HealthComponent.h"
+#include "BuffableComponent.h"
+#include "Constant.h"
 
 PlayerIdleState::PlayerIdleState(Entity* playerEntity, const luabridge::LuaRef& playerStateTable)
 :PlayerState(playerEntity, playerStateTable)
@@ -66,10 +69,25 @@ PlayerState* PlayerIdleState::handleEvent(const sf::Event& event,
 	}
 	SpiritCoreComponent* spiritCoreComp = mPlayer->nonCreateComp<SpiritCoreComponent>();
 
+	HealthComponent* healthComp = mPlayer->comp<HealthComponent>();
+
 	if (event.type == sf::Event::KeyPressed &&
 		event.key.code == sf::Keyboard::R)
 	{
 		spiritCoreComp->startRestoring();
+		//healthComp->setImmuneTimer(sf::Time::Zero);
+	}
+
+	if (event.type == sf::Event::KeyPressed &&
+		event.key.code == sf::Keyboard::Q 
+		&& (!spiritCoreComp || (!spiritCoreComp->isRestoring() &&
+		!spiritCoreComp->noSpiritCoreLeft())))
+	{
+		mPlayer->comp<BuffableComponent>()->insertBuffWithScriptName(buffScriptDir + 
+			"SpiritShieldBuffScript.lua", "SpiritShieldBuff");
+
+		//healthComp->setImmuneTimer(sf::seconds(5.0f));
+		spiritCoreComp->decreaseSpiritCore(1);
 	}
 	
 	

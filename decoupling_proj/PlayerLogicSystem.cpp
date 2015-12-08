@@ -15,6 +15,8 @@
 #include "PlayerIdleState.h"
 #include "SpiritCoreComponent.h"
 #include "SpiritCoreChangedEvent.h"
+#include "FloatableComponent.h"
+#include "TextDisplayComponent.h"
 #include <iostream>
 
 PlayerLogicSystem::PlayerLogicSystem(Entity* entityPlayer, const luabridge::LuaRef& playerStateDataTable)
@@ -36,13 +38,14 @@ void PlayerLogicSystem::handleEvent(const sf::Event& event,
 	const sf::RenderWindow& renderWindow)
 {
 	mPlayer->comp<VelocityComponent>()->setVelocity(0.f, 0.f, false);
+	mPlayer->comp<FloatableComponent>()->setIsFloating(false);
 	if (!mPlayerState.get())
 		return;
 
 
 
 	PlayerState* newPlayerState = mPlayerState->handleEvent(event, renderWindow);
-	//checkStateValidity(newPlayerState, mPlayer);
+	checkStateValidity(newPlayerState, mPlayer);
 
 	if (newPlayerState)
 		mPlayerState.reset(newPlayerState);
@@ -57,7 +60,7 @@ void PlayerLogicSystem::processRealTimeInput(sf::Time dt,
 		return;
 
 	PlayerState* newPlayerState =  mPlayerState->processRealTimeInput(dt, renderWindow);
-	//checkStateValidity(newPlayerState, mPlayer);
+	checkStateValidity(newPlayerState, mPlayer);
 	if (newPlayerState)
 		mPlayerState.reset(newPlayerState);
 }
@@ -72,6 +75,11 @@ void PlayerLogicSystem::processEntity(sf::Time dt, Entity* entity)
 	
 	if (!mPlayerState.get())
 		return;
+
+	TextDisplayComponent* textDisplayComp = mPlayer->comp<TextDisplayComponent>();
+	textDisplayComp->setString("");
+	if (mPlayer->comp<HealthComponent>()->isImmune())
+		textDisplayComp->setString("Immune");
 	
 	SpiritCoreComponent* spiritCoreComp = entity->nonCreateComp<SpiritCoreComponent>();
 
@@ -80,7 +88,7 @@ void PlayerLogicSystem::processEntity(sf::Time dt, Entity* entity)
 
 
 	PlayerState* newPlayerState = mPlayerState->update(dt);
-	//checkStateValidity(newPlayerState, mPlayer);
+	checkStateValidity(newPlayerState, mPlayer);
 	if (newPlayerState)
 		mPlayerState.reset(newPlayerState);
 
@@ -137,9 +145,10 @@ void PlayerLogicSystem::checkStateValidity(PlayerState*& playerStatePointer, Ent
 	if (!playerStatePointer)
 		return;
 
-	StaminaComponent* staminaComp = player->comp<StaminaComponent>();
+	
+	//StaminaComponent* staminaComp = player->comp<StaminaComponent>();
 
-	if (!playerStatePointer->isStaminaCompEnough(staminaComp)){
+	if (!playerStatePointer->isStateAvailable()){
 		delete playerStatePointer;
 		playerStatePointer = nullptr;
 	}

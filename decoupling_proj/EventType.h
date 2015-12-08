@@ -11,6 +11,7 @@ namespace EventType{
 		CreateNewEntity,
 		SoulHookStruck,
 		SpiritCoreChanged,
+		EntityGotDamaged,
 		EventTypeCount
 	};
 };

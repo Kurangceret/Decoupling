@@ -34,12 +34,11 @@ public:
 		const std::string& layer);
 
 	void addNewLayer(const std::string& layer);
-
-	void removeRemoveableEntities();
+	bool isEntityRemoveable(Entity* entity) const;
 private:
 	EntitiesLayers::iterator findIterByLayer(const std::string& layer);
 
-	bool isEntityRemoveable(Entity* entity) const;
+	
 private:
 	EntitiesLayers mEntities;
 	static std::size_t mCurrentEntityIncremental;

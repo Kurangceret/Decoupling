@@ -11,7 +11,7 @@ SpiderAIStates = {
       playerPos = playerEntity:compTransform():getWorldPosition(true)
         
       ownerEntity:compAutomaticPath():setDestToCalculate(playerPos.x, playerPos.y)
-      self.mChasingRange = EngineUtil.randomRange(64, 150)
+      self.mChasingRange = EngineUtil.randomRange(64, 100)
 		end,
 
 		update = function(self, ownerEntity, dt, playerEntity)
@@ -117,7 +117,7 @@ SpiderAIStates = {
       
       ownerVelo:setVelocityX(self.mChargingDir.x)
       ownerVelo:setVelocityY(self.mChargingDir.y)
-      ownerVelo:setSpeedIdentifier(3.0)
+      ownerVelo:setSpeedIdentifier(4.0)
       
     end,
     quit = function(self, ownerEntity, dt, playerEntity)
@@ -127,9 +127,9 @@ SpiderAIStates = {
       ownerVelo:setSpeedIdentifier(1.0)
       
     end,
-    mTrackPlayerTime = 1.25,
-    mIdleTime = 1.5,
-    mChargingTime = 0.6,
+    mTrackPlayerTime = 1.00,
+    mIdleTime = 1.25,
+    mChargingTime = 0.3,
     mRecoveryTime = 0.4,
     mChargingDir,
     mHasStartedMeleeRect = false,

@@ -28,6 +28,10 @@
 #include "HarmfulBoxesComponent.h"
 #include "RotatedBoxCollisionComponent.h"
 #include "SpiritCoreComponent.h"
+#include "FallingSystem.h"
+#include "EntityChildrenComponent.h"
+#include "HealthComponent.h"
+#include "BuffableComponent.h"
 #include <SFML/Graphics/Text.hpp>
 #include <LTBL\Light\Light_Point.h>
 #include <LTBL\Utils.h>
@@ -151,6 +155,10 @@ void Game::initializeSystem()
 	RotatedBoxToBoxHandlerSystem::Ptr rotatedBoxToBoxHandlerSystem(new RotatedBoxToBoxHandlerSystem());
 	mCollisionHandlerSystems.addSystem(rotatedBoxToBoxHandlerSystem.get());
 	mSystems.push_back(std::move(rotatedBoxToBoxHandlerSystem));
+
+	FallingSystem::Ptr fallingSystem(new FallingSystem());
+	mFallingSystem = fallingSystem.get();
+	mSystems.push_back(std::move(fallingSystem));
 }
 
 void Game::draw()
@@ -233,7 +241,7 @@ void Game::update(sf::Time dt)
 	EventManager::getInstance()->processQueuedEvents();
 
 	mCurEntitiesList.clear();
-
+	
 	sf::FloatRect updateBound = mCamera.getBoundingRect();
 
 	float additionRange = 200.f;
@@ -309,6 +317,9 @@ void Game::updateCommonSystem(sf::Time dt)
 		if (entity->hasComp<SpriteComponent>())
 			entity->comp<SpriteComponent>()->updateBlinkStatus(dt);
 
+		if (entity->hasComp<BuffableComponent>())
+			entity->comp<BuffableComponent>()->update(dt);
+
 		if (entity->hasComp<ScriptUpdateComponent>())
 			entity->comp<ScriptUpdateComponent>()->runScriptUpdateFunc(dt);
 
@@ -324,9 +335,18 @@ void Game::updateCommonSystem(sf::Time dt)
 		if (entity->hasComp<HarmfulBoxesComponent>())
 			entity->comp<HarmfulBoxesComponent>()->updateHarmedEntityData(dt);
 
+		if (entity->hasComp<HealthComponent>())
+			entity->comp<HealthComponent>()->update(dt);
+
 		mGameLogicSystems.update(entity, dt);
 		mMovementSystems.update(entity, dt);
-		mMeleeRectSystem->update(dt, entity);
+
+		if (mFallingSystem)
+			mFallingSystem->update(dt, entity);
+
+		if (mMeleeRectSystem)
+			mMeleeRectSystem->update(dt, entity);
+
 		mAnimationSystems.update(entity, dt);
 	}
 }

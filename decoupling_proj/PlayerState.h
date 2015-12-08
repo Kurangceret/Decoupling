@@ -30,6 +30,8 @@ public:
 	virtual PlayerState* update(sf::Time dt) = 0;
 
 	virtual bool isStaminaCompEnough(StaminaComponent* staminaComp) = 0;
+
+	virtual bool isStateAvailable();
 	virtual std::string getLuaTableName() const;
 protected:
 	Entity* mPlayer;

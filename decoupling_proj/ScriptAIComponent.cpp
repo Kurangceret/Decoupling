@@ -11,7 +11,8 @@ ScriptAIComponent::ScriptAIComponent(Entity* entity)
 mCurrentState(nullptr),
 mUsePlayerFoundSystem(true),
 mPlayerIsFound(false),
-mRangeCheckingToTarget(200.f)
+mRangeCheckingToTarget(200.f),
+mLuaState(nullptr)
 {
 	mIdentifier = ComponentIdentifier::ScriptAIComponent;
 }

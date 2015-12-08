@@ -20,6 +20,7 @@
 class PlayerLogicSystem;
 class MovementSystem;
 class MeleeRectToBoxHandlerSystem;
+class FallingSystem;
 
 class Game{
 public:
@@ -49,6 +50,7 @@ private:
 
 	AvoidanceBoxSystem* mAvoidBoxSystem;
 	MeleeRectToBoxHandlerSystem* mMeleeRectToBoxHandlerSystem;
+	FallingSystem* mFallingSystem;
 
 	MeleeRectSystem::Ptr mMeleeRectSystem;
 	GroupSystem mAnimationSystems;
@@ -60,7 +62,9 @@ private:
 	CommonBattleLogic mCommonBattleLogic;
 
 	Entity* mPlayer;
+
 	PlayerLogicSystem* mPlayerLogicSystem;
+	
 
 	TextureHolder& mTextures;
 	TextureHolderInt& mTexturesInt;

@@ -67,6 +67,12 @@
     <Filter Include="Source Files\Gui">
       <UniqueIdentifier>{063686e0-5c06-4a15-a670-e9d765aa903a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Component\Buff">
+      <UniqueIdentifier>{273c58f0-fc79-4030-839d-1c599bff64ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Component\Buff">
+      <UniqueIdentifier>{b70ff9ce-ceaf-460c-88e5-52713eedcee3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -419,6 +425,21 @@
     </ClCompile>
     <ClCompile Include="PlayerAimRangeState.cpp">
       <Filter>Source Files\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="FallingSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityChildrenComponent.cpp">
+      <Filter>Source Files\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="BuffScript.cpp">
+      <Filter>Source Files\Component\Buff</Filter>
+    </ClCompile>
+    <ClCompile Include="BuffableComponent.cpp">
+      <Filter>Source Files\Component\Buff</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityGotDamagedEvent.cpp">
+      <Filter>Source Files\Event</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -805,6 +826,21 @@
     </ClInclude>
     <ClInclude Include="PlayerAimRangeState.h">
       <Filter>Header Files\PlayerState</Filter>
+    </ClInclude>
+    <ClInclude Include="FallingSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityChildrenComponent.h">
+      <Filter>Header Files\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="BuffableComponent.h">
+      <Filter>Header Files\Component\Buff</Filter>
+    </ClInclude>
+    <ClInclude Include="BuffScript.h">
+      <Filter>Header Files\Component\Buff</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityGotDamagedEvent.h">
+      <Filter>Header Files\Event</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

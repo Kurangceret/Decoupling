@@ -61,7 +61,7 @@ Player = {
         collidedCategoryComp = collidedEntity:compCategory()
         thisTransformComp = thisEntity:compTransform()
         
-        floatComp = thisEntity:compFloatable()
+        --[[floatComp = thisEntity:compFloatable()
         
         if(floatComp:isFloating() and collidedCategoryComp:getCategory() & Category.Tile ~= 0) then
           floatComp:setIsFloating(false)
@@ -120,7 +120,7 @@ Player = {
           
                     
           floatComp:setIsFloating(continueFloating)
-        end
+        end--]]
         
         if(collidedCategoryComp:getCategory() & Category.Enemy ~= 0) then
            vector = systemCollision:getCalculatedSafeOffSet(thisEntity)
@@ -141,7 +141,7 @@ Player = {
       
     },
     FloatableComponent = {
-      
+      isFloating = false
     },
 
 		--[[AutomaticPathComponent = {
@@ -162,6 +162,15 @@ Player = {
 			maxHealth = 50,
 			currentHealth = 50
 		},
+    BuffableComponent = {
+      
+      
+    },
+    EntityChildrenComponent = {
+      
+      
+      
+    },
     --Entity list right here shall be invoked with SceneGraph parent like component
     --so the entity in the list right here shall follow this entity's world transform
     --[[ChildEntityList = {
@@ -202,7 +211,7 @@ Player = {
     AttackModeComponent = {
       attackModeList = {"Spear_Attack_", "Axe_Attack_"}
       
-    },
+    },--[[
     SpiritFormComponent = {
       passedThroughCategory = Category.Enemy,
       damageToPassedThroughCategory = 2.0,
@@ -211,7 +220,7 @@ Player = {
       delayTime = 0.3,
       staminaIncrease = 25
       
-    },
+    },]]--
     
     DestroyableComponent = {
       isDestroyed = function(thisEntity) 
@@ -593,7 +602,7 @@ Player = {
 					wholeDelayDuration = 0,
 					wholeSwingDuration = 0.6,
           vulnerableDuration = 0.1,
-          recoveryDuration = 0.5
+          recoveryDuration = 0.0
 
         }	
 

@@ -2,7 +2,7 @@
 #include "Component.h"
 
 #include <functional>
-
+#include <SFML/System/Time.hpp>
 
 class Entity;
 
@@ -27,11 +27,18 @@ public:
 	bool wasHealthChanged();
 
 	void setDamagedReactor(const DamagedReactor& damagedReactor);
+	
+	//void setImmuneTimer(const sf::Time& timer);
+	void setIsImmune(bool flag);
+	bool isImmune() const;
+	void update(sf::Time dt);
 private:
 	float mMaxHealth;
 	float mCurrentHealth;
 
 	bool mWasHealthChanged;
 	DamagedReactor mDamagedFunc;
+	//sf::Time mImmuneTimer;
+	bool mIsImmune;
 };
 

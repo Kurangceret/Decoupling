@@ -26,7 +26,7 @@ private:
 	CollidedAvoidBoxEntityData* calculateClosestEntity(const sf::Vector2f& centerPos, 
 		std::vector<CollidedAvoidBoxEntityData>& listEntities) const;
 
-	void checkForStaticTile(Entity* entity, std::vector<Entity*>& staticTile);
+	//void checkForStaticTile(Entity* entity, std::vector<Entity*>& staticTile);
 
 	bool checkForPathWill(const sf::Vector2f& entityWorldPos,
 		AutomaticPathComponent* autoPathComp, 

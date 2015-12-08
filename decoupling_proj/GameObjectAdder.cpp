@@ -70,7 +70,7 @@ void GameObjectAdder::addVertexNode(const std::string& layer, const sf::Vector2f
 {
 	std::string value = mTiledMap.propertyKeyToValue(tileSetId, tileId, "IsFallable");
 	if (value != ""){
-
+		
 
 		int boolVal = static_cast<int>(std::stoi(value));
 		AStarNode* curTileNode = PathFinder::getInstance()->sceneToGraph(pos);

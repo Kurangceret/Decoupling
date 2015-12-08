@@ -55,6 +55,8 @@ public:
 	template<class T>
 	void deleteListener(T* ownerPointer);
 
+	void deleteLuaListener(Entity* ownerEntity);
+	void deleteSpecificLuaListener(Entity* ownerEntity, const std::string& eventName);
 
 	void addLuaListener(Entity* thisEntity, const std::string& eventName, 
 		lua_State* luaState);
@@ -119,9 +121,10 @@ void EventManager::deleteListener(EventType::ID eventId, T* ownerPointer)
 		std::vector<LuaEventCallBackFunc::Ptr>& listOfCallBack = luaFindIter->second;
 		std::vector<LuaEventCallBackFunc::Ptr>::iterator iterC;
 
-		for (iterC = listOfCallBack.begin(); iterC != listOfCallBack.end())
+		for (iterC = listOfCallBack.begin(); iterC != listOfCallBack.end();)
 		{
-			if (iterC->get()->ownerEntity == ownerPointer)
+			if (Utility::convertPointerToAddress(iterC->get()->ownerEntity) 
+				== Utility::convertPointerToAddress(ownerPointer))
 			{
 				iterC = listOfCallBack.erase(iterC);
 				continue;

@@ -1,10 +1,10 @@
 #include "EventBase.h"
 
 
-EventBase::EventBase()
-:mEventIdentifier(EventType::None)
+EventBase::EventBase(Entity* entitySender)
+:mEventIdentifier(EventType::None),
+mEntityEventSender(entitySender)
 {
-
 }
 
 
@@ -16,4 +16,9 @@ EventBase::~EventBase()
 EventType::ID EventBase::getEventType() const
 {
 	return mEventIdentifier;
+}
+
+Entity* EventBase::getEntityEventSender()
+{
+	return mEntityEventSender;
 }

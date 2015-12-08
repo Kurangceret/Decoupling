@@ -35,7 +35,7 @@ SwampMoaAIStates = {
     end,
     
     mMinChaseRange = 64,
-    mMaxChaseRange = 90,
+    mMaxChaseRange = 78,
     mIntervalChasePeriod = 0.30,
     mChasingRange = 0.0,
     mElapsedTime = 0.0,

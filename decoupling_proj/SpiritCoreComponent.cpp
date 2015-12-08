@@ -1,6 +1,8 @@
 #include "SpiritCoreComponent.h"
 #include "VelocityComponent.h"
 #include "Entity.h"
+#include "HealthComponent.h"
+#include "BuffableComponent.h"
 
 SpiritCoreComponent::SpiritCoreComponent(Entity* entity)
 :Component(entity),
@@ -36,6 +38,7 @@ void SpiritCoreComponent::updateRestoreStatus(sf::Time dt)
 		mElapsedTime = sf::seconds(-1.f);
 		restoreSpiritCoreFully();
 		veloCom->setSpeedIdentifier(1.f);
+		mOwnerEntity->comp<BuffableComponent>()->destroyAllBuff();
 	}
 }
 
@@ -44,8 +47,10 @@ void SpiritCoreComponent::startRestoring()
 	if (mCurrentSpiritCore >= mMaxSpiritCore || 
 		mElapsedTime.asSeconds() >= 0.f)
 		return;
+
 	mCurrentSpiritCore = 0;
 	mElapsedTime = sf::Time::Zero;
+	//mOwnerEntity->comp<HealthComponent>()->setImmuneTimer(sf::seconds(0.f));
 }
 
 bool SpiritCoreComponent::isRestoring() const

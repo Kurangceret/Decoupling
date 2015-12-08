@@ -29,6 +29,8 @@
 #include "FloatableComponent.h"
 #include "SpiritCoreComponent.h"
 #include "DestroyableComponent.h"
+#include "EntityChildrenComponent.h"
+#include "BuffableComponent.h"
 
 ComponentArranger::ComponentArranger(GeneralData* generalData)
 :mTexturesStringManager(*generalData->getTexturesStringManager()),
@@ -169,9 +171,13 @@ void ComponentArranger::readFromLuaScript(Entity* entity,
 		readDestroyableComponent(entity, luaState,
 			table["DestroyableComponent"].cast<luabridge::LuaRef>());
 
-	if (!table["ChildEntityList"].isNil() && table["ChildEntityList"].isTable())
+	if (!table["BuffableComponent"].isNil() && table["BuffableComponent"].isTable())
+		readBuffableComponent(entity, luaState,
+			table["BuffableComponent"].cast<luabridge::LuaRef>());
+
+	if (!table["EntityChildrenComponent"].isNil() && table["EntityChildrenComponent"].isTable())
 		arrangeChildEntityList(entity, luaState,
-			table["ChildEntityList"].cast<luabridge::LuaRef>());
+			table["EntityChildrenComponent"].cast<luabridge::LuaRef>());
 	
 	
 
@@ -190,6 +196,7 @@ void ComponentArranger::readFromLuaScript(Entity* entity,
 void ComponentArranger::arrangeChildEntityList(Entity* entity, lua_State* luaState,
 	luabridge::LuaRef& table)
 {
+	EntityChildrenComponent* entityChildrenComp = entity->comp<EntityChildrenComponent>();
 	int index = 1;
 	while (!table[index].isNil()){
 		luabridge::LuaRef curIndex = table[index];
@@ -201,8 +208,10 @@ void ComponentArranger::arrangeChildEntityList(Entity* entity, lua_State* luaSta
 		while (!posListTable[posInd].isNil()){
 			Entity* childEntity = mGeneralData->getEntityManager()->createEntity("Sky");
 			this->readFromLuaScript(childEntity, scriptDir, tableName, luaState);
-			childEntity->comp<EntityParentComponent>()->mParent = entity;
+			childEntity->comp<EntityParentComponent>();
 
+			entityChildrenComp->insertNewChild(childEntity);
+			
 			TransformableComponent* transformComp = childEntity->comp<TransformableComponent>();
 
 			luabridge::LuaRef posTable = posListTable[posInd].cast<luabridge::LuaRef>();
@@ -684,7 +693,8 @@ void ComponentArranger::readTimerComponent(Entity* entity, lua_State* luaState,
 void ComponentArranger::readFloatableComponent(Entity* entity, lua_State* luaState,
 	luabridge::LuaRef& table)
 {
-	entity->comp<FloatableComponent>();
+	FloatableComponent* floatComp = entity->comp<FloatableComponent>();
+	floatComp->setIsFloating(table["isFloating"].cast<bool>());
 }
 
 void ComponentArranger::readSpiritCoreComponent(Entity* entity, lua_State* luaState,
@@ -703,4 +713,11 @@ void ComponentArranger::readDestroyableComponent(Entity* entity, lua_State* luaS
 	DestroyableComponent* destroyableComp = entity->comp<DestroyableComponent>();
 	destroyableComp->mLuaDestroyedFunc = std::make_unique<luabridge::LuaRef>(table["isDestroyed"]);
 	destroyableComp->mLuaRemoveableFunc = std::make_unique<luabridge::LuaRef>(table["isRemoveable"]);
+}
+
+void ComponentArranger::readBuffableComponent(Entity* entity, lua_State* luaState,
+	luabridge::LuaRef& table)
+{
+	BuffableComponent* buffableComp = entity->comp<BuffableComponent>();
+	buffableComp->mLuaState = luaState;
 }

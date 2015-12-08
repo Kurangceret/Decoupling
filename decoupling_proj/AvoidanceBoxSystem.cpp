@@ -73,7 +73,7 @@ void AvoidanceBoxSystem::processEntity(sf::Time dt, Entity* entity)
 }
 
 
-void AvoidanceBoxSystem::checkForStaticTile(Entity* entity, std::vector<Entity*>& staticTile)
+/*void AvoidanceBoxSystem::checkForStaticTile(Entity* entity, std::vector<Entity*>& staticTile)
 {
 	AutomaticPathComponent* automaticPath = entity->comp<AutomaticPathComponent>();
 	TransformableComponent* transformComp = entity->comp<TransformableComponent>();
@@ -89,7 +89,7 @@ void AvoidanceBoxSystem::checkForStaticTile(Entity* entity, std::vector<Entity*>
 		std::vector<AStarNode*>(),
 		nullptr, staticTile);
 
-}
+}*/
 
 
 bool AvoidanceBoxSystem::checkForPathWill(const sf::Vector2f& entityWorldPos, 
@@ -107,12 +107,33 @@ bool AvoidanceBoxSystem::checkForPathWill(const sf::Vector2f& entityWorldPos,
 	PathFinder::getInstance()->getListOfNodesBasedOnBoundingRect(
 		boxColCompToBeAvoided->getTransfromedRect(), nodesToBeAvoided);
 
-	bool isContacted = false;
+	bool isSafe = true;
 
-	RayCast::castRayLinesFromRect(entityWorldPos, transformedEntityRect,
-		curDestNode->pos, PathFinder::getInstance(), nodesToBeAvoided, &isContacted);
+	RayCast::TileChecker tileChecker = 
+		[&nodesToBeAvoided, &isSafe](AStarNode* node) -> bool
+	{
+		if (!RayCast::mStandardTileChecker(node)){
+			isSafe = false;
+			return false;
+		}
 
-	return !isContacted;
+		if (std::find(nodesToBeAvoided.begin(), nodesToBeAvoided.end(),
+			node) != nodesToBeAvoided.end())
+		{
+			isSafe = false;
+			return false;
+		}
+		return true;
+	};
+
+
+	/*RayCast::castRayLinesFromRect(entityWorldPos, transformedEntityRect,
+		curDestNode->pos, PathFinder::getInstance(), nodesToBeAvoided, &isContacted);*/
+
+	return RayCast::castRayLinesFromRect(entityWorldPos, transformedEntityRect,
+		curDestNode->pos, PathFinder::getInstance(), tileChecker);
+
+	//return !isSafe;
 }
 
 void AvoidanceBoxSystem::performUnalignedAvoidance(Entity* entity, 
@@ -160,13 +181,26 @@ void AvoidanceBoxSystem::performUnalignedAvoidance(Entity* entity,
 		//if (entityV.y * nextDir.y < 0.f) isOnCorrectVelo = false;
 		if (Utility::getDotProduct(entityV, nextDir) < 0.f) isOnCorrectVelo = false;
 
+		RayCast::TileChecker tileChecker =
+			[&staticTile](AStarNode* node) -> bool
+		{
+			bool flag = true;
+			if (!RayCast::mStandardTileChecker(node))
+				flag = false;
+			
+
+			if (node && node->tile)
+			{
+				flag = false;
+				staticTile.push_back(node->tile);
+			}
+			return flag;
+		};
+
 		if (isOnCorrectVelo)
 			RayCast::castRayLinesFromRect(entityWorldPos, boxCollisionComp->getTransfromedRect(),
 				pathList.back().starNode->pos,
-				PathFinder::getInstance(),
-				std::vector<AStarNode*>(),
-				nullptr,
-				staticTile);
+				PathFinder::getInstance(), tileChecker);
 	}
 	
 	
@@ -298,9 +332,17 @@ void AvoidanceBoxSystem::performUnalignedAvoidance(Entity* entity,
 	float closestDotProd = closestData->dotProd;
 	Entity* closestEntity = closestData->collidedEntity;
 		
-	TransformableComponent* testTransformComp = closestEntity->nonCreateComp<TransformableComponent>();
-	VelocityComponent* testVeloComp = closestEntity->nonCreateComp<VelocityComponent>();
-	AvoidanceBoxComponent* testAvoidBoxComp = closestEntity->nonCreateComp<AvoidanceBoxComponent>();
+	TransformableComponent* testTransformComp = nullptr;
+	if (closestEntity->hasComp<TransformableComponent>())
+		testTransformComp = closestEntity->comp<TransformableComponent>();
+
+	VelocityComponent* testVeloComp = nullptr;
+	if (closestEntity->hasComp<VelocityComponent>())
+		testVeloComp = closestEntity->comp<VelocityComponent>();
+
+	AvoidanceBoxComponent* testAvoidBoxComp = nullptr;
+	if (closestEntity->hasComp<AvoidanceBoxComponent>())
+		testAvoidBoxComp = closestEntity->comp<AvoidanceBoxComponent>();
 	
 
 	sf::Vector2f testEntityRayPos = testTransformComp->getWorldPosition(true);

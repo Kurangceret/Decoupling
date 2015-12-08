@@ -12,6 +12,8 @@ public:
 		const sf::RenderWindow& renderWindow);
 	virtual PlayerState* update(sf::Time dt);
 
+
+	virtual bool isStateAvailable();
 	virtual bool isStaminaCompEnough(StaminaComponent* staminaComp);
 
 	virtual std::string getLuaTableName() const;

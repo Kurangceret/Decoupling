@@ -14,6 +14,7 @@
 #include "BoxCollisionComponent.h"
 #include "HealthComponent.h"
 #include "EventManager.h"
+#include "FloatableComponent.h"
 #include "Constant.h"
 
 /*const float sideStepDur = 0.15f;
@@ -61,8 +62,12 @@ std::string PlayerSideStepState::getLuaTableName() const
 PlayerState* PlayerSideStepState::handleEvent(const sf::Event& event,
 	const sf::RenderWindow& renderWindow)
 {
+	SpiritCoreComponent* spiritCoreComp = mPlayer->nonCreateComp<SpiritCoreComponent>();
+
 	if (mSideStepDur.asSeconds() <= 0.f && event.type == sf::Event::KeyPressed &&
-		event.key.code == sf::Keyboard::Space)
+		event.key.code == sf::Keyboard::Space 
+		&& (!spiritCoreComp || (!spiritCoreComp->isRestoring() &&
+		!spiritCoreComp->noSpiritCoreLeft())))
 	{
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 			mNextSideStepDir.x = -1.f;
@@ -77,7 +82,7 @@ PlayerState* PlayerSideStepState::handleEvent(const sf::Event& event,
 			mNextSideStepDir.x = 1.f;
 	}
 
-	SpiritCoreComponent* spiritCoreComp = mPlayer->nonCreateComp<SpiritCoreComponent>();
+	
 	if (event.type == sf::Event::MouseButtonPressed &&
 		event.mouseButton.button == sf::Mouse::Left && (!spiritCoreComp || (!spiritCoreComp->isRestoring() &&
 		!spiritCoreComp->noSpiritCoreLeft())))
@@ -145,6 +150,8 @@ bool PlayerSideStepState::isStaminaCompEnough(StaminaComponent* staminaComp)
 
 PlayerState* PlayerSideStepState::update(sf::Time dt)
 {
+	mPlayer->comp<FloatableComponent>()->setIsFloating(true);
+
 	VelocityComponent* veloComp = mPlayer->comp<VelocityComponent>();
 	mSideStepDur -= dt;
 
@@ -180,8 +187,8 @@ PlayerState* PlayerSideStepState::update(sf::Time dt)
 
 		mCurrentSideStepDir = mNextSideStepDir;
 		mNextSideStepDir = sf::Vector2f();
-
-		if (spiritCoreComp && spiritCoreComp->noSpiritCoreLeft()){
+		spiritCoreComp->decreaseSpiritCore(1);
+		/*if (spiritCoreComp && spiritCoreComp->noSpiritCoreLeft()){
 			CreateNewEntityEvent::Ptr createEntitiesEvent(new CreateNewEntityEvent());
 
 			QueueEntityScriptData::EngineInitializeFunc initializeFunc;
@@ -214,7 +221,7 @@ PlayerState* PlayerSideStepState::update(sf::Time dt)
 		}
 		else if (spiritCoreComp){
 			spiritCoreComp->decreaseSpiritCore(1);
-		}
+		}*/
 		//return new PlayerSideStepState(mPlayer, mNextSideStepDir);
 		return nullptr;
 	}
@@ -227,4 +234,13 @@ PlayerState* PlayerSideStepState::update(sf::Time dt)
 
 	veloComp->setSpeedIdentifier(1.f);
 	return new PlayerIdleState(mPlayer, mPlayerStateTable);
+}
+
+
+bool PlayerSideStepState::isStateAvailable()
+{
+	SpiritCoreComponent* spiritCoreComp = mPlayer->comp<SpiritCoreComponent>();
+
+	return (!spiritCoreComp || (!spiritCoreComp->isRestoring() &&
+		!spiritCoreComp->noSpiritCoreLeft()));
 }

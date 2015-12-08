@@ -12,3 +12,9 @@ mParent(nullptr)
 EntityParentComponent::~EntityParentComponent()
 {
 }
+
+
+Entity* EntityParentComponent::getParent()
+{
+	return mParent;
+}

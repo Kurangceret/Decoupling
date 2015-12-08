@@ -2,42 +2,53 @@ dofile ("Scripts/ConstantScript.lua")
 dofile("Scripts/CategoryScript.lua")
 
 
-frameSize = {16, 16}
+frameSize = {54, 54}
 boundingBoxSize = {0, 0, frameSize[1], frameSize[2]}
 
-PrototypeProjectile = {
+HealthSpirit = {
   initializeData = {
 		SpriteComponent = {
-			textureLocation = TextureDir .. "prototype_projectile.png",
+			textureLocation = TextureDir .. "elemental_shield.png",
 			textureRect = {0, 0, frameSize[1], frameSize[2]}
 
 		},
 
 		TransformableComponent = {
-			positionX = 350,
-			positionY = 150,
+			positionX = 0,
+			positionY = 0,
 			centerOriginX = boundingBoxSize[1] + (boundingBoxSize[3] / 2),
 			centerOriginY = boundingBoxSize[2] + (boundingBoxSize[4] / 2)
-		},
-
+		}--[[,
+    ScriptUpdateComponent = {
+      memberVariables = {
+        mChargingTime = 0.5,
+        mElapsedTime = 0.0
+      },
+      updateFunc = function(thisEntity, dt, memberVariables)
+        --print(thisEntity:compScriptUpdate():getMemberVariables().mElapsedTime)
+        if(memberVariables.mChargingTime <= memberVariables.mElapsedTime) then
+            thisEntity:compVelocity():setVelocity(0, 0)
+            return
+        end
+        
+        memberVariables.mElapsedTime = memberVariables.mElapsedTime + dt
+        
+        
+        
+      end
+      
+    }]],
 		BoxCollisionComponent = {
 			floatRect = {0, 0, boundingBoxSize[3], boundingBoxSize[4]},
       collisionReactor = function(thisEntity, collidedEntity, systemCollision)
         collidedCategoryComp = collidedEntity:compCategory()
         --thisTransformComp = thisEntity:compTransform()
         
-        if(collidedCategoryComp:getCategory() & Category.Projectile ~= 0 or
-          collidedCategoryComp:getCategory() & Category.Enemy ~= 0) then
-          return
-        end
-        
-        thisEntity:compHealth():damage(1, collidedEntity)
-        
       end
 		},
 
 		VelocityComponent = {
-			speed = 240,
+			speed = 300,
 			sprintSpeed = 110
 
     },
@@ -51,29 +62,10 @@ PrototypeProjectile = {
 
     },]]--
     CategoryComponent = {
-      category = Category.Projectile
+      category = Category.PlayerElementalShield
       
     },
     TextDisplayComponent = {
-      
-    }, 
-    HarmfulBoxesComponent = {
-      boxesList = {
-        {
-          name = "Body",
-          activated = true,
-          floatRect = {0, 0, frameSize[1], frameSize[2]},
-          collisionReactor = function(thisEntity, collidedEntity, systemCollision, harmfulBoxData, selfAIState)
-            
-            
-          end,
-          damage = 5,
-          attackCategory = Category.Player
-        },
-      }
-    },
-    FloatableComponent = {
-      isFloating = true
       
     },
     DestroyableComponent = {

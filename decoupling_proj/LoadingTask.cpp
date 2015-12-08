@@ -19,6 +19,7 @@
 #include "FireSpiritCollidedEvent.h"
 #include "CreateNewEntityEvent.h"
 #include "SoulHookStruckEvent.h"
+#include "EntityGotDamagedEvent.h"
 
 #include "LightPointComponent.h"
 #include "MeleeRectComponent.h"
@@ -33,6 +34,8 @@
 #include "Utility.h"
 #include "RayCast.h"
 #include "FloatableComponent.h"
+#include "BuffableComponent.h"
+
 
 LoadingTask::LoadingTask(GeneralData* generalData)
 : mThread(&LoadingTask::runTask, this),
@@ -220,7 +223,7 @@ void LoadingTask::initializeLayerMap(const std::string& layer)
 			unsigned int tileId = mTiledMap.At(layer, x, y);
 			if (tileId <= 0)
 				continue;
-
+			//528, 816
 			pos = mTiledMap.coordToPosition(x, y);
 
 			unsigned int tileSetId = mTiledMap.tileToTileSet(tileId);
@@ -511,6 +514,8 @@ void LoadingTask::bindLogicsToLuaScript()
 		.beginNamespace("Event")
 		.beginClass<EventBase>("EventBase")
 		.addConstructor<void(*)(void)>()
+		.addConstructor<void(*)(Entity*)>()
+		.addFunction("getEntityEventSender", &EventBase::getEntityEventSender)
 		.endClass()
 		.deriveClass<FireSpiritCollidedEvent, EventBase>("FireSpiritCollidedEvent")
 		.addConstructor<void(*)(void)>()
@@ -525,6 +530,9 @@ void LoadingTask::bindLogicsToLuaScript()
 		.addConstructor<void(*)(void)>()
 		.addData("mHookLatestPos", &SoulHookStruckEvent::mHookLatestPos)
 		.addData("mCollidedEntityCategory", &SoulHookStruckEvent::mCollidedEntityCategory)
+		.endClass()
+		.deriveClass<EntityGotDamagedEvent, EventBase>("EntityGotDamagedEvent")
+		.addConstructor<void(*)(Entity*)>()
 		.endClass()
 		.endNamespace();
 	/**/
@@ -557,6 +565,8 @@ void LoadingTask::bindLogicsToLuaScript()
 		.addStaticFunction("getInstance", &EventManager::getInstance)
 		
 		.addFunction("addLuaListener", &EventManager::addLuaListener)
+		.addFunction("deleteLuaListener", &EventManager::deleteLuaListener)
+		.addFunction("deleteSpecificLuaListener", &EventManager::deleteSpecificLuaListener)
 		.addFunction("queueEvent", &EventManager::queueScriptEvent)
 		.endClass();
 
@@ -582,6 +592,7 @@ void LoadingTask::bindLogicsToLuaScript()
 		.addFunction("compTimer", &Entity::comp<TimerComponent>)
 		.addFunction("compFloatable", &Entity::comp<FloatableComponent>)
 		.addFunction("compDestroyable", &Entity::comp<DestroyableComponent>)
+		.addFunction("compBuffable", &Entity::comp<BuffableComponent>)
 		.endClass();
 
 	luabridge::getGlobalNamespace(luaState)
@@ -681,6 +692,7 @@ void LoadingTask::bindLogicsToLuaScript()
 		.addFunction("meleeRectIsDelaying", &MeleeRectComponent::meleeRectIsDelaying)
 		.addFunction("isRecovering", &MeleeRectComponent::isRecovering)
 		.addFunction("isVulnerable", &MeleeRectComponent::isVulnerable)
+		.addFunction("stopMeleeRectUpdating", &MeleeRectComponent::stopMeleeRectUpdating)
 		.endClass();
 
 	luabridge::getGlobalNamespace(luaState)
@@ -700,6 +712,7 @@ void LoadingTask::bindLogicsToLuaScript()
 		.addFunction("damage", &HealthComponent::damage)
 		.addFunction("increaseHealth", &HealthComponent::increaseHealth)
 		.addFunction("getCurrentHealth", &HealthComponent::getCurrentHealth)
+		.addFunction("setIsImmune", &HealthComponent::setIsImmune)
 		.endClass();
 
 	luabridge::getGlobalNamespace(luaState)
@@ -724,6 +737,18 @@ void LoadingTask::bindLogicsToLuaScript()
 		.beginClass<DestroyableComponent>("DestroyableComponent")
 		.addFunction("isDestroyed", &DestroyableComponent::isDestroyed)
 		.endClass();
+
+	luabridge::getGlobalNamespace(luaState)
+		.beginClass<BuffableComponent>("BuffableComponent")
+		.addFunction("insertNewBuff", &BuffableComponent::insertNewBuffFromScript)
+		.addFunction("getFirstBuffByName", &BuffableComponent::getFirstBuffByName)
+		.endClass();
+
+	luabridge::getGlobalNamespace(luaState)
+		.beginClass<BuffScript>("BuffScript")
+		.addFunction("getLuaReferenceToBuff", &BuffScript::getLuaReferenceToBuff)
+		.endClass();
+
 	/*Component classes end here~*/
 
 

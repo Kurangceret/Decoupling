@@ -4,6 +4,8 @@
 #include "BoxCollisionComponent.h"
 #include "TransformableComponent.h"
 #include "DestroyableComponent.h"
+#include "EntityParentComponent.h"
+#include "EntityChildrenComponent.h"
 #include <algorithm>
 
 std::size_t EntityManager::mCurrentEntityIncremental = 0;
@@ -112,6 +114,7 @@ std::vector<Entity*> EntityManager::getEnts()
 				i++;
 				continue;
 			}
+			
 			///mRemoveableIter.push_back(i);
 			i = iter.second.erase(i);
 			//i++;
@@ -137,6 +140,11 @@ std::vector<Entity*> EntityManager::getEntsByBound(const sf::FloatRect& worldBou
 		{
 			Entity *curEntity = i->get();
 			if (isEntityRemoveable(curEntity)){
+				if (curEntity->hasComp<EntityParentComponent>()){
+					Entity* parentEntity = curEntity->comp<EntityParentComponent>()->getParent();
+					parentEntity->comp<EntityChildrenComponent>()->removeChild(curEntity);
+				}
+
 				i = iter.second.erase(i);
 				continue;
 			}

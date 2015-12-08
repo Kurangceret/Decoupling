@@ -33,6 +33,8 @@ namespace ComponentIdentifier{
 		TimerComponent = 1 << 25,
 		FloatableComponent = 1 << 26,
 		SpiritCoreComponent = 1 << 27,
+		EntityChildrenComponent = 1 << 28,
+		BuffableComponent = 1 << 29,
 		CollisionComponent = BoxCollisionComponent | CircleCollisionComponent | RotatedBoxCollisionComponent,
 		DisplayComponent = SpriteComponent | TextDisplayComponent,
 		ComponentCounts

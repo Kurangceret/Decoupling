@@ -44,7 +44,7 @@ sf::Vector2f CircularPathComponent::getCenter() const
 		return mCenter;
 	
 	EntityParentComponent* parentComp = mOwnerEntity->comp<EntityParentComponent>();
-	return parentComp->mParent->comp<TransformableComponent>()->getWorldPosition(true);
+	return parentComp->getParent()->comp<TransformableComponent>()->getWorldPosition(true);
 }
 
 void CircularPathComponent::increaseCurRadius(float val)

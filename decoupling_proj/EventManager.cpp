@@ -2,6 +2,7 @@
 #include "FireSpiritCollidedEvent.h"
 #include "CreateNewEntityEvent.h"
 #include "SoulHookStruckEvent.h"
+#include "EntityGotDamagedEvent.h"
 #include <RefCountedPtr.h>
 
 EventManager* EventManager::mEventManager = nullptr;
@@ -26,10 +27,12 @@ EventManager::EventManager()
 	mEventsTypeDictionary.insert(std::make_pair("FireSpiritCollidedEvent", EventType::FireSpiritCollided));
 	mEventsTypeDictionary.insert(std::make_pair("CreateNewEntityEvent", EventType::CreateNewEntity));
 	mEventsTypeDictionary.insert(std::make_pair("SoulHookStruckEvent", EventType::SoulHookStruck));
+	mEventsTypeDictionary.insert(std::make_pair("EntityGotDamagedEvent", EventType::EntityGotDamaged));
 
 	registerEventForLuaScript<FireSpiritCollidedEvent>(EventType::FireSpiritCollided);
 	registerEventForLuaScript<CreateNewEntityEvent>(EventType::CreateNewEntity);
 	registerEventForLuaScript<SoulHookStruckEvent>(EventType::SoulHookStruck);
+	registerEventForLuaScript<EntityGotDamagedEvent>(EventType::EntityGotDamaged);
 }
 
 
@@ -154,6 +157,9 @@ void EventManager::deriveCallToEvent(const luabridge::LuaRef& func, Entity* owne
 	case EventType::SoulHookStruck:
 		callFuncCastEventBase<SoulHookStruckEvent>(func, ownerEntity, eventBase);
 		break;
+	case EventType::EntityGotDamaged:
+		callFuncCastEventBase<EntityGotDamagedEvent>(func, ownerEntity, eventBase);
+		break;
 	default:
 		break;
 	}
@@ -163,4 +169,46 @@ LuaEventCallBackFunc::LuaEventCallBackFunc(Entity* entity,  const luabridge::Lua
 :mLuaCallBack(luaRef), ownerEntity(entity)
 {
 
+}
+
+void EventManager::deleteLuaListener(Entity* ownerEntity)
+{
+	for (auto& luaIter : mLuaListeners){
+		std::vector<LuaEventCallBackFunc::Ptr>& listOfCallBack = luaIter.second;
+		std::vector<LuaEventCallBackFunc::Ptr>::iterator iterC;
+
+		for (iterC = listOfCallBack.begin(); iterC != listOfCallBack.end();)
+		{
+			if (iterC->get()->ownerEntity == ownerEntity)
+			{
+				iterC = listOfCallBack.erase(iterC);
+				continue;
+			}
+			iterC++;
+		}
+	}
+}
+
+void EventManager::deleteSpecificLuaListener(Entity* ownerEntity, const std::string& eventName)
+{
+	auto iter = mEventsTypeDictionary.find(eventName);
+	if (iter == mEventsTypeDictionary.end())
+		return;
+	EventType::ID eventId = iter->second;
+
+	auto luaFindIter = mLuaListeners.find(eventId);
+	if (luaFindIter != mLuaListeners.end()){
+		std::vector<LuaEventCallBackFunc::Ptr>& listOfCallBack = luaFindIter->second;
+		std::vector<LuaEventCallBackFunc::Ptr>::iterator iterC;
+
+		for (iterC = listOfCallBack.begin(); iterC != listOfCallBack.end();)
+		{
+			if (iterC->get()->ownerEntity == ownerEntity)
+			{
+				iterC = listOfCallBack.erase(iterC);
+				continue;
+			}
+			iterC++;
+		}
+	}
 }

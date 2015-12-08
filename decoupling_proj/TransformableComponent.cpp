@@ -28,7 +28,10 @@ sf::Transform TransformableComponent::getWorldTransform(bool withOrigin) const
 		curEntity->hasComp<TransformableComponent>())
 	{
 
-		curEntity = curEntity->comp<EntityParentComponent>()->mParent;
+		curEntity = curEntity->comp<EntityParentComponent>()->getParent();
+		if (!curEntity)
+			break;
+
 		sf::Transform curTransform = curEntity->comp<TransformableComponent>()->
 			mTransformable.getTransform();
 

@@ -17,3 +17,8 @@ std::string PlayerState::getLuaTableName() const
 {
 	return "";
 }
+
+bool PlayerState::isStateAvailable()
+{
+	return true;
+}
