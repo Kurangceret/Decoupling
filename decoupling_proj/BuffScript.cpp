@@ -1,7 +1,15 @@
 #include "BuffScript.h"
 #include <iostream>
 
-BuffScript::BuffScript(LuaRefPtr luaRef)
+BuffScript::LuaBuffInitializer BuffScript::mEmptyLuaInitializer = nullptr;
+
+BuffScript::NativeBuffInitializer BuffScript::mEmptyNativeInitializer = 
+[](const luabridge::LuaRef& table)
+{
+
+};
+
+BuffScript::BuffScript(LuaRefPtr luaRef, const NativeBuffInitializer& nativeBuffInitalizer, LuaBuffInitializer luaBuffInitializer)
 :mLuaReferenceToBuff(std::move(luaRef)),
 mBuffName(""),
 mUseBuffTimer(false),
@@ -16,6 +24,9 @@ mAbsoluteDestroy(false)
 	if (!luaTable["mBuffTimer"].isNil())
 		mBuffTimer = sf::seconds(luaTable["mBuffTimer"].cast<float>());
 
+	nativeBuffInitalizer(*mLuaReferenceToBuff);
+	if (luaBuffInitializer.get())
+		(*luaBuffInitializer)(*mLuaReferenceToBuff);
 }
 
 
@@ -90,6 +101,11 @@ std::string BuffScript::getBuffName() const
 bool BuffScript::isBuffTimerOver() const
 {
 	return mBuffTimer <= sf::Time::Zero;
+}
+
+luabridge::LuaRef* BuffScript::getDirectRefToBuff()
+{
+	return mLuaReferenceToBuff.get();
 }
 
 luabridge::LuaRef BuffScript::getLuaReferenceToBuff()

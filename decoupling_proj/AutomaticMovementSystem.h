@@ -1,6 +1,8 @@
 #pragma once
 #include "System.h"
 #include "AutomaticPathComponent.h"
+class EntityExpertiseComponent;
+
 class AutomaticMovementSystem :	public System{
 public:
 	AutomaticMovementSystem();
@@ -14,7 +16,8 @@ protected:
 private:
 	void smoothAutomaticPath(const sf::Vector2f& agentPos,
 		const sf::FloatRect& boundingRect,
-		AutomaticPathComponent::AutomaticPathList& pathList);
+		AutomaticPathComponent::AutomaticPathList& pathList,
+		EntityExpertiseComponent* entExpertiseComp = nullptr);
 
 };
 

@@ -22,6 +22,7 @@ public:
 	void updateEntireTimers(float seconds);
 	void updateTimer(const std::string& timerName, float seconds);
 	void setNewTimeLimitToTimer(const std::string& timerName, float newSeconds);
+	sf::Time getTimeLimitTimer(const std::string& timerName) const;
 	bool isTimerElapsed(const std::string& timerName) const;
 
 private:

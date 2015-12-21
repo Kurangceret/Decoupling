@@ -7,6 +7,7 @@
 #include "RayCast.h"
 #include <unordered_map>
 #include <SFML/Graphics/VertexArray.hpp>
+#include "EntityExpertiseComponent.h"
 
 PathFinder* PathFinder::mPathFinder = nullptr;
 
@@ -261,6 +262,21 @@ std::vector<MovingNode> PathFinder::constructPath(Entity *entity, const sf::Vect
 	std::vector<std::pair<AStarNode*, float>> mFList;
 	
 	bool firstTime = true;
+	EntityExpertiseComponent* entExpertiseComp = nullptr;
+	if (entity->hasComp<EntityExpertiseComponent>())
+		entExpertiseComp = entity->comp<EntityExpertiseComponent>();
+
+	RayCast::TileChecker tileChecker = RayCast::mStandardTileChecker;
+	if (entExpertiseComp){
+		tileChecker = [&entExpertiseComp](AStarNode* curNode){
+			if (!curNode || curNode->tile)
+				return false;
+			if (!entExpertiseComp->isAbleToFloat() && curNode->isFallable)
+				return false;
+
+			return true;
+		};
+	}
 
 	while (!openSet.empty()){
 		
@@ -288,8 +304,8 @@ std::vector<MovingNode> PathFinder::constructPath(Entity *entity, const sf::Vect
 
 		for (AStarNode* n : currentNode->adjacent){
 		
-			if (n->tile || n->isFallable || isInsideQueue[n]  /*!isRectOverallNodeSafe(n->pos, entityRect)*/
-				|| !RayCast::castRayLinesFromRect(originForRay, entityRect, n->pos, this)
+			if (isInsideQueue[n] || !tileChecker(n) /*!isRectOverallNodeSafe(n->pos, entityRect)*/
+				|| !RayCast::castRayLinesFromRect(originForRay, entityRect, n->pos, this, tileChecker)
 					/*|| !isRectOverallNodeSafe(n->pos, entityRect)*/)
 			{
 				if (n == endNode){
@@ -473,7 +489,7 @@ void PathFinder::getListOfNodesBasedOnBoundingRect(const sf::FloatRect& rect,
 }
 
 bool PathFinder::isRectOverallNodeSafe(const sf::Vector2f& entityPos,
-	const sf::FloatRect& entityRect)
+	const sf::FloatRect& entityRect, EntityExpertiseComponent* entExpertiseComp)
 {
 	sf::FloatRect newRect = entityRect;
 	newRect.left = entityPos.x - entityRect.width / 2.f;
@@ -482,13 +498,42 @@ bool PathFinder::isRectOverallNodeSafe(const sf::Vector2f& entityPos,
 	std::vector<AStarNode*> markedNodes;
 	getListOfNodesBasedOnBoundingRect(newRect, markedNodes);
 
+
+
 	for (auto node : markedNodes){
-		if (!node || node->tile)
+		if (!node)
+			return false;
+
+		if ((!entExpertiseComp  && node->tile))
+			return false;
+
+		if (entExpertiseComp &&
+			((!entExpertiseComp->isAbleToFloat() && node->isFallable))
+			)
 			return false;
 	}
 	return true;
 		
 }
+
+/*bool PathFinder::isLuaRectOverallNodeSafe(const sf::Vector2f& entityPos,
+	const sf::FloatRect& entityRect, lua_State* luaState)
+{
+	luabridge::LuaRef luaNodeChecker = luabridge::LuaRef::fromStack(luaState, 3);
+
+	sf::FloatRect newRect = entityRect;
+	newRect.left = entityPos.x - entityRect.width / 2.f;
+	newRect.top = entityPos.y - entityRect.height / 2.f;
+
+	std::vector<AStarNode*> markedNodes;
+	getListOfNodesBasedOnBoundingRect(newRect, markedNodes);
+
+	for (auto node : markedNodes){
+		if (!luaNodeChecker.isNil() && !luaNodeChecker(node))
+			return false;
+	}
+	return true;
+}*/
 
 
 bool PathFinder::hasNode(const std::vector<AStarNode*>& set, const AStarNode *val)

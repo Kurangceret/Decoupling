@@ -9,6 +9,7 @@
 #include "BoxCollisionComponent.h"
 #include "RayCast.h"
 #include "AvoidanceBoxComponent.h"
+#include "EntityExpertiseComponent.h"
 
 AutomaticMovementSystem::AutomaticMovementSystem()
 {
@@ -56,7 +57,11 @@ void AutomaticMovementSystem::processEntity(sf::Time dt, Entity* entity)
 	//sf::Transformable& transformable = entity->comp<TransformableComponent>()->mTransformable;
 	sf::Vector2f worldPos = entity->comp<TransformableComponent>()->getWorldPosition(true);
 
-	smoothAutomaticPath(worldPos, entity->comp<BoxCollisionComponent>()->mBoundingRect, pathList);
+	EntityExpertiseComponent* entExpertiseComp = nullptr;
+	if (entity->hasComp<EntityExpertiseComponent>())
+		entExpertiseComp = entity->comp<EntityExpertiseComponent>();
+
+	smoothAutomaticPath(worldPos, entity->comp<BoxCollisionComponent>()->mBoundingRect, pathList, entExpertiseComp);
 
 	MovingNode& movingNode = pathList.back();
 
@@ -79,11 +84,25 @@ void AutomaticMovementSystem::processEntity(sf::Time dt, Entity* entity)
 
 void AutomaticMovementSystem::smoothAutomaticPath(const sf::Vector2f& agentPos,
 	const sf::FloatRect& boundingRect,
-	AutomaticPathComponent::AutomaticPathList& pathList)
+	AutomaticPathComponent::AutomaticPathList& pathList,
+	EntityExpertiseComponent* entExpertiseComp)
 {
 	
+
+	RayCast::TileChecker tileChecker = RayCast::mStandardTileChecker;
+	if (entExpertiseComp){
+		tileChecker = [&entExpertiseComp](AStarNode* curNode){
+			if (!curNode || curNode->tile)
+				return false;
+			if (!entExpertiseComp->isAbleToFloat() && curNode->isFallable)
+				return false;
+
+			return true;
+		};
+	}
+
 	while (pathList.size() > 1 && RayCast::castRayLinesFromRect(agentPos, boundingRect,
-		(pathList.end() - 2)->starNode->pos, PathFinder::getInstance()))
+		(pathList.end() - 2)->starNode->pos, PathFinder::getInstance(), tileChecker))
 	{
 		pathList.erase(pathList.end() - 1);
 	}

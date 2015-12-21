@@ -130,6 +130,15 @@ void GameObjectAdder::addSkeletonArcher(const std::string& layer, const sf::Vect
 	skeletonArcher->comp<TransformableComponent>()->setPosition(pos);
 }
 
+void GameObjectAdder::addFireman(const std::string& layer, const sf::Vector2f& pos)
+{
+	Entity* fireMan = mEntityManager.createEntity(layer);
+	mComponentArranger.readFromLuaScript(fireMan, scriptDir +
+		"FiremanScript.lua",
+		"Fireman", mGeneralData->getLuaState());
+	fireMan->comp<TransformableComponent>()->setPosition(pos);
+}
+
 void GameObjectAdder::addEntityFromEventScript(EventBase* eventBase)
 {
 	if (!eventBase || eventBase->getEventType() != EventType::CreateNewEntity)

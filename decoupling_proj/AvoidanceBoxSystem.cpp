@@ -11,6 +11,11 @@
 #include "RayCast.h"
 #include "PathFinder.h"
 
+
+CollidedBoxAStarNodeData::CollidedBoxAStarNodeData()
+:node(nullptr), diff(), dotProd()
+{}
+
 AvoidanceBoxSystem::AvoidanceBoxSystem()
 {
 	pushRequiredComponent(ComponentIdentifier::BoxCollisionComponent);
@@ -137,7 +142,8 @@ bool AvoidanceBoxSystem::checkForPathWill(const sf::Vector2f& entityWorldPos,
 }
 
 void AvoidanceBoxSystem::performUnalignedAvoidance(Entity* entity, 
-	std::vector<Entity*>& toBeCheckedList, sf::Time dt)
+	std::vector<Entity*>& toBeCheckedList, 
+	const std::vector<AStarNode*>& nodesAroundEntity, sf::Time dt)
 {
 	if (!checkForEntity(entity))
 		return;
@@ -168,6 +174,7 @@ void AvoidanceBoxSystem::performUnalignedAvoidance(Entity* entity,
 
 	std::vector<Entity*> staticTile;
 	sf::Vector2f entityV = veloComp->getVelocity();
+	//std::vector<AStarNode*> fallableNodeList;
 
 	if (automaticPathComp && !automaticPathComp->isAutomaticPathsEmpty()){
 		AutomaticPathComponent::AutomaticPathList& pathList = automaticPathComp->getAutomaticPaths();
@@ -177,25 +184,26 @@ void AvoidanceBoxSystem::performUnalignedAvoidance(Entity* entity,
 		sf::Vector2f nextDir = Utility::unitVector(nextNode->pos - entityWorldPos);
 
 		bool isOnCorrectVelo = true;
-		//if (entityV.x * nextDir.x < 0.f) isOnCorrectVelo = false;
-		//if (entityV.y * nextDir.y < 0.f) isOnCorrectVelo = false;
+		
 		if (Utility::getDotProduct(entityV, nextDir) < 0.f) isOnCorrectVelo = false;
 
 		RayCast::TileChecker tileChecker =
-			[&staticTile](AStarNode* node) -> bool
+			[&staticTile/*, &fallableNodeList*/](AStarNode* node) -> bool
 		{
 			bool flag = true;
 			if (!RayCast::mStandardTileChecker(node))
 				flag = false;
 			
 
-			if (node && node->tile)
-			{
+			if (node && node->tile){
 				flag = false;
 				staticTile.push_back(node->tile);
 			}
+			//if (node->isFallable)
+				//fallableNodeList.push_back(node);
 			return flag;
 		};
+
 
 		if (isOnCorrectVelo)
 			RayCast::castRayLinesFromRect(entityWorldPos, boxCollisionComp->getTransfromedRect(),
@@ -326,29 +334,50 @@ void AvoidanceBoxSystem::performUnalignedAvoidance(Entity* entity,
 	
 
 	
+	sf::Vector2f testEntityRayPos;
 
 	CollidedAvoidBoxEntityData* closestData = calculateClosestEntity(entityWorldPos, listOfCollided);
-	sf::Vector2f closestDiff = closestData->diff;
-	float closestDotProd = closestData->dotProd;
+	sf::Vector2f closestDiff;
+	float closestDotProd = 0.f;
 	Entity* closestEntity = closestData->collidedEntity;
-		
+
 	TransformableComponent* testTransformComp = nullptr;
-	if (closestEntity->hasComp<TransformableComponent>())
-		testTransformComp = closestEntity->comp<TransformableComponent>();
+	testTransformComp = closestEntity->comp<TransformableComponent>();
 
-	VelocityComponent* testVeloComp = nullptr;
-	if (closestEntity->hasComp<VelocityComponent>())
-		testVeloComp = closestEntity->comp<VelocityComponent>();
+	sf::Vector2f closestEntityPos = testTransformComp->getWorldPosition(true);
 
-	AvoidanceBoxComponent* testAvoidBoxComp = nullptr;
-	if (closestEntity->hasComp<AvoidanceBoxComponent>())
-		testAvoidBoxComp = closestEntity->comp<AvoidanceBoxComponent>();
+	CollidedBoxAStarNodeData closestNodeData = getClosestPossibleFallableNode(entity, 
+		entityRayRect, nodesAroundEntity);
+
+	//if entity is closer
+	if (!closestNodeData.node || Utility::vectorLength(
+		closestNodeData.node->pos - entityWorldPos) >=
+		Utility::vectorLength(closestEntityPos - entityWorldPos))
+	{
+
+		closestDiff = closestData->diff;
+		closestDotProd = closestData->dotProd;
+
+		VelocityComponent* testVeloComp = nullptr;
+		if (closestEntity->hasComp<VelocityComponent>())
+			testVeloComp = closestEntity->comp<VelocityComponent>();
+
+		AvoidanceBoxComponent* testAvoidBoxComp = nullptr;
+		if (closestEntity->hasComp<AvoidanceBoxComponent>())
+			testAvoidBoxComp = closestEntity->comp<AvoidanceBoxComponent>();
+
+
+		testEntityRayPos = closestEntityPos;
+		if (testVeloComp && testAvoidBoxComp)
+			testEntityRayPos += testAvoidBoxComp->getRayLength() * testVeloComp->getVelocity();
+	}
+	else{ //if node to be avoided is closer
+		testEntityRayPos = closestNodeData.node->pos;
+		closestDiff = closestNodeData.diff;
+		closestDotProd = closestNodeData.dotProd;
+	}
 	
-
-	sf::Vector2f testEntityRayPos = testTransformComp->getWorldPosition(true);
 	
-	if (testVeloComp && testAvoidBoxComp)
-		testEntityRayPos += testAvoidBoxComp->getRayLength() * testVeloComp->getVelocity();
 
 	//sf::Vector2f diff = testEntityRayPos - entityRayPos;
 	sf::Vector2f diff = closestDiff;
@@ -378,11 +407,7 @@ void AvoidanceBoxSystem::performUnalignedAvoidance(Entity* entity,
 	//entityForce *= (entityProjLength / entityRayLength);
 
 	sf::Vector2f newVDir = Utility::unitVector(entityForce);
-	/*if (std::abs(newVDir.x) > std::abs(newVDir.y)){
-		newVDir.x *= -1.f;
-	}
-	else
-		newVDir.y *= -1.f;*/
+	
 
 	sf::Vector2f newV = SteeringBehavior::seek(veloComp, newVDir, dt);
 	//sf::Vector2f newV = Utility::unitVector(entityForce);
@@ -410,3 +435,57 @@ CollidedAvoidBoxEntityData* AvoidanceBoxSystem::calculateClosestEntity(const sf:
 	return closestData;
 }
 
+
+CollidedBoxAStarNodeData AvoidanceBoxSystem::getClosestPossibleFallableNode(Entity* mainEntity,
+	RotatedRect& mainEntityRayRect,
+	const std::vector<AStarNode*>& fallableNodeList) const
+{
+	CollidedBoxAStarNodeData finalData;
+	if (fallableNodeList.empty())
+		return finalData;
+
+	sf::Vector2f mainEntityWorldPos = mainEntity->comp<TransformableComponent>()->getWorldPosition(true);
+	sf::Vector2f mainEntityV = mainEntity->comp<VelocityComponent>()->getVelocity();
+	sf::Vector2f tileSize = PathFinder::getInstance()->getTileSize();
+	
+
+	std::vector<CollidedBoxAStarNodeData> collidedNodeList;
+	for (auto& node : fallableNodeList){
+		if (!node->isFallable)
+			continue;
+
+		sf::Vector2f nodeMainPos = node->pos;
+
+		sf::Vector2f diff = nodeMainPos - mainEntityWorldPos;
+
+		float dotProd = Utility::getDotProduct(diff, mainEntityV);
+
+		if (dotProd <= 0.f)
+			continue;
+
+		RotatedRect newRotatedRect(sf::FloatRect(nodeMainPos.x - (tileSize.x / 2.f), 
+			nodeMainPos.y - (tileSize.y / 2.f), tileSize.x, tileSize.y));
+		
+		if (Utility::rotatedCollision(mainEntityRayRect, newRotatedRect)){
+			CollidedBoxAStarNodeData data;
+			data.diff = diff;
+			data.dotProd = dotProd;
+			data.node = node;
+			collidedNodeList.push_back(data);
+		}
+		
+	}
+
+	float closestDifference = std::numeric_limits<float>().max();
+	for (auto& collidedData : collidedNodeList){
+
+		float nowLength = Utility::vectorLength(collidedData.node->pos - mainEntityWorldPos);
+
+		if (nowLength < closestDifference){
+			finalData = collidedData;
+			closestDifference = nowLength;
+		}
+	}
+
+	return finalData;
+}

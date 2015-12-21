@@ -18,6 +18,11 @@ std::string PlayerState::getLuaTableName() const
 	return "";
 }
 
+bool PlayerState::isStaminaCompEnough(StaminaComponent* staminaComp)
+{
+	return true;
+}
+
 bool PlayerState::isStateAvailable()
 {
 	return true;

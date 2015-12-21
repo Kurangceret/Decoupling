@@ -12,7 +12,8 @@ mCurrentState(nullptr),
 mUsePlayerFoundSystem(true),
 mPlayerIsFound(false),
 mRangeCheckingToTarget(200.f),
-mLuaState(nullptr)
+mLuaState(nullptr),
+mLuaTileChecker(nullptr)
 {
 	mIdentifier = ComponentIdentifier::ScriptAIComponent;
 }
@@ -38,10 +39,16 @@ void ScriptAIComponent::update(sf::Time dt, Entity* playerEntity)
 
 		if (Utility::vectorLength(playerWorldPos - ownerWorldPos) > mRangeCheckingToTarget)
 			return;
+		RayCast::TileChecker tileChecker = RayCast::mStandardTileChecker;
+		if (mLuaTileChecker){
+			tileChecker = [&](AStarNode* curNode)-> bool{
+				return (*mLuaTileChecker)(curNode);
+			};
+		}
 
 		mPlayerIsFound = RayCast::castRayLine(ownerTransformComp->getWorldPosition(true), 
 			playerEntity->comp<TransformableComponent>()->getWorldPosition(true),
-			PathFinder::getInstance());
+			PathFinder::getInstance(), tileChecker);
 		return;
 	}
 

@@ -24,6 +24,8 @@ public:
 		const sf::IntRect& intRect, int tileSetId);
 	void addSwampMoa(const std::string& layer, const sf::Vector2f& pos);
 	void addSkeletonArcher(const std::string& layer, const sf::Vector2f& pos);
+	void addFireman(const std::string& layer, const sf::Vector2f& pos);
+
 	void addPlayer(const std::string& layer, const sf::Vector2f& pos);
 
 	

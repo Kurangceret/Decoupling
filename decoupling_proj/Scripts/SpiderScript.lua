@@ -52,7 +52,11 @@ Spider = {
 		},
 		AutomaticPathComponent = {
 
-		},
+    },
+    BuffableComponent = {
+      
+      
+    },
 		ScriptAIComponent = {
 			AIScriptDir = AIScriptDir .. "SpiderAIScript3.lua",
       tableName = "Spider"
@@ -66,9 +70,9 @@ Spider = {
       avoidCategory = Category.Enemy
       
     },
-    SpiritGrabberComponent = {
-      
-      
+    EntityExpertiseComponent = {
+      ableToFloat = false,
+      ableToWalk = true
     },
     MeleeRectComponent = {
       attackCategory = Category.Player,

@@ -11,6 +11,7 @@
 #include "PlayerSpiritState.h"
 #include "SpiritCoreComponent.h"
 #include "PlayerAimRangeState.h"
+#include "PlayerFireBallState.h"
 
 PlayerAttackState::PlayerAttackState(Entity* player, const sf::Vector2f& initialDir, 
 	const luabridge::LuaRef& playerStateTable,
@@ -68,8 +69,8 @@ PlayerState* PlayerAttackState::handleEvent(const sf::Event& event,
 		sf::Vector2f mousePos(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
 		sf::Vector2f entityWorldPos = mPlayer->comp<TransformableComponent>()->getWorldPosition(true);
 		
-
-		return new PlayerAimRangeState(mPlayer, mPlayerStateTable);
+		return new PlayerFireBallState(mPlayer, mPlayerStateTable);
+		//return new PlayerAimRangeState(mPlayer, mPlayerStateTable);
 	}
 
 	/*if (event.type == sf::Event::MouseButtonPressed &&

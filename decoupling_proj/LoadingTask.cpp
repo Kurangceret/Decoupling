@@ -15,6 +15,7 @@
 #include "CircularPathComponent.h"
 #include "TransformableComponent.h"
 #include "CollisionHandlerSystem.h"
+#include "FunctionCallerManager.h"
 
 #include "FireSpiritCollidedEvent.h"
 #include "CreateNewEntityEvent.h"
@@ -35,6 +36,7 @@
 #include "RayCast.h"
 #include "FloatableComponent.h"
 #include "BuffableComponent.h"
+#include "EntityExpertiseComponent.h"
 
 
 LoadingTask::LoadingTask(GeneralData* generalData)
@@ -259,6 +261,9 @@ void LoadingTask::initializeLayerMap(const std::string& layer)
 			case GraphicsType::Player:
 				gameObjAdder.addPlayer(layer, pos);
 				break;
+			case GraphicsType::Fireman:
+				gameObjAdder.addFireman(layer, pos);
+				break;
 			default:
 				break;
 			}
@@ -447,6 +452,7 @@ void LoadingTask::bindLogicsToLuaScript()
 	luabridge::getGlobalNamespace(luaState)
 		.beginClass<sf::Vector2f>("sfVector2f")
 		.addConstructor<void(*)(void)>()
+		//.addConstructor<void(*)(float, float)>()
 		.addData("x", &sf::Vector2f::x)
 		.addData("y", &sf::Vector2f::y)
 		//.addProperty("", sf::Vector3)
@@ -508,8 +514,26 @@ void LoadingTask::bindLogicsToLuaScript()
 		.endClass();
 	/**/
 
+	/*Registering functionCaller class*/
+	luabridge::getGlobalNamespace(luaState)
+		.beginClass<FunctionCallerManager>("FunctionCallerManager")
+		.addStaticFunction("getInstance", &FunctionCallerManager::getInstance)
+		.addFunction("insertNewLuaFunctionCaller", &FunctionCallerManager::insertNewLuaFunctionCaller)
+		.endClass();
+
+	/**/
+
 	/*Register coded C++ event*/
-	
+	luabridge::getGlobalNamespace(luaState)
+		.beginClass<EventManager>("EventManager")
+		.addStaticFunction("getInstance", &EventManager::getInstance)
+
+		.addFunction("addLuaListener", &EventManager::addLuaListener)
+		.addFunction("deleteLuaListener", &EventManager::deleteLuaListener)
+		.addFunction("deleteSpecificLuaListener", &EventManager::deleteSpecificLuaListener)
+		.addFunction("queueEvent", &EventManager::queueScriptEvent)
+		.endClass();
+
 	luabridge::getGlobalNamespace(luaState)
 		.beginNamespace("Event")
 		.beginClass<EventBase>("EventBase")
@@ -538,6 +562,9 @@ void LoadingTask::bindLogicsToLuaScript()
 	/**/
 
 	/*Registering coded C++ classes/function*/
+	
+
+	/*Path Finding classes related begin*/
 	luabridge::getGlobalNamespace(luaState)
 		.beginClass<PathFinder>("PathFinder")
 		.addStaticFunction("getInstance", &PathFinder::getInstance)
@@ -550,7 +577,18 @@ void LoadingTask::bindLogicsToLuaScript()
 		.endClass();
 
 	luabridge::getGlobalNamespace(luaState)
+		.beginClass<AStarNode>("AStarNode")
+		.addConstructor<void(*)(void)>()
+		.addData("pos", &AStarNode::pos)
+		.addData("tile", &AStarNode::tile)
+		.addData("isFallable", &AStarNode::isFallable)
+		.endClass();
+
+	/*Path findng classes related end*/
+
+	luabridge::getGlobalNamespace(luaState)
 		.beginClass<HarmfulBoxData>("HarmfulBoxData")
+		.addData("mAttackCategory", &HarmfulBoxData::mAttackCategory)
 		.endClass();
 
 	/*luabridge::getGlobalNamespace(luaState)
@@ -560,46 +598,40 @@ void LoadingTask::bindLogicsToLuaScript()
 		.endClass();
 		*/
 
-	luabridge::getGlobalNamespace(luaState)
-		.beginClass<EventManager>("EventManager")
-		.addStaticFunction("getInstance", &EventManager::getInstance)
-		
-		.addFunction("addLuaListener", &EventManager::addLuaListener)
-		.addFunction("deleteLuaListener", &EventManager::deleteLuaListener)
-		.addFunction("deleteSpecificLuaListener", &EventManager::deleteSpecificLuaListener)
-		.addFunction("queueEvent", &EventManager::queueScriptEvent)
-		.endClass();
+	
 
 	luabridge::getGlobalNamespace(luaState)
 		.beginClass<Entity>("Entity")
 		.addConstructor<void(*)(std::size_t)>()
 		.addProperty("mId", &Entity::getId)
-		.addFunction("compAnimation", &Entity::comp<AnimationComponent>)
-		.addFunction("compVelocity", &Entity::comp<VelocityComponent>)
-		.addFunction("compScriptAI", &Entity::comp<ScriptAIComponent>)
-		.addFunction("compAutomaticPath", &Entity::comp<AutomaticPathComponent>)
-		.addFunction("compCategory", &Entity::comp<CategoryComponent>)
-		.addFunction("compTransform", &Entity::comp<TransformableComponent>)
-		.addFunction("compCircularPath", &Entity::comp<CircularPathComponent>)
-		.addFunction("compLightPoint", &Entity::comp<LightPointComponent>)
-		.addFunction("compMeleeRect", &Entity::comp<MeleeRectComponent>)
-		.addFunction("compBoxCollision", &Entity::comp<BoxCollisionComponent>)
-		.addFunction("compTextDisplay", &Entity::comp<TextDisplayComponent>)
-		.addFunction("compHarmfulBoxes", &Entity::comp<HarmfulBoxesComponent>)
-		.addFunction("compHealth", &Entity::comp<HealthComponent>)
-		.addFunction("compSpiritForm", &Entity::comp<SpiritFormComponent>)
-		.addFunction("compScriptUpdate", &Entity::comp<ScriptUpdateComponent>)
-		.addFunction("compTimer", &Entity::comp<TimerComponent>)
-		.addFunction("compFloatable", &Entity::comp<FloatableComponent>)
-		.addFunction("compDestroyable", &Entity::comp<DestroyableComponent>)
-		.addFunction("compBuffable", &Entity::comp<BuffableComponent>)
+		.addFunction("compAnimation", &Entity::nonCreateComp<AnimationComponent>)
+		.addFunction("compVelocity", &Entity::nonCreateComp<VelocityComponent>)
+		.addFunction("compScriptAI", &Entity::nonCreateComp<ScriptAIComponent>)
+		.addFunction("compAutomaticPath", &Entity::nonCreateComp<AutomaticPathComponent>)
+		.addFunction("compCategory", &Entity::nonCreateComp<CategoryComponent>)
+		.addFunction("compTransform", &Entity::nonCreateComp<TransformableComponent>)
+		.addFunction("compCircularPath", &Entity::nonCreateComp<CircularPathComponent>)
+		.addFunction("compLightPoint", &Entity::nonCreateComp<LightPointComponent>)
+		.addFunction("compMeleeRect", &Entity::nonCreateComp<MeleeRectComponent>)
+		.addFunction("compBoxCollision", &Entity::nonCreateComp<BoxCollisionComponent>)
+		.addFunction("compTextDisplay", &Entity::nonCreateComp<TextDisplayComponent>)
+		.addFunction("compHarmfulBoxes", &Entity::nonCreateComp<HarmfulBoxesComponent>)
+		.addFunction("compHealth", &Entity::nonCreateComp<HealthComponent>)
+		.addFunction("compSpiritForm", &Entity::nonCreateComp<SpiritFormComponent>)
+		.addFunction("compScriptUpdate", &Entity::nonCreateComp<ScriptUpdateComponent>)
+		.addFunction("compTimer", &Entity::nonCreateComp<TimerComponent>)
+		.addFunction("compFloatable", &Entity::nonCreateComp<FloatableComponent>)
+		.addFunction("compDestroyable", &Entity::nonCreateComp<DestroyableComponent>)
+		.addFunction("compBuffable", &Entity::nonCreateComp<BuffableComponent>)
+		.addFunction("compExpertise", &Entity::nonCreateComp<EntityExpertiseComponent>)
 		.endClass();
 
 	luabridge::getGlobalNamespace(luaState)
 		.beginClass<CollisionHandlerSystem>("CollisionHandlerSystem")
 		.addFunction("getCalculatedSafeOffSet", &CollisionHandlerSystem::getCalculatedSafeOffSet)
 		.endClass();
-	/*Component classes begin*/
+
+	/*Registeing Component classes begin*/
 	luabridge::getGlobalNamespace(luaState)
 		.beginClass<AnimationComponent>("AnimationComponent")
 		.addConstructor<void(*)(Entity*)>()
@@ -630,6 +662,7 @@ void LoadingTask::bindLogicsToLuaScript()
 	luabridge::getGlobalNamespace(luaState)
 		.beginClass<TextDisplayComponent>("TextDisplayComponent")
 		.addFunction("setString", &TextDisplayComponent::setString)
+		.addFunction("incrementString", &TextDisplayComponent::incrementString)
 		.endClass();
 
 	luabridge::getGlobalNamespace(luaState)
@@ -693,6 +726,7 @@ void LoadingTask::bindLogicsToLuaScript()
 		.addFunction("isRecovering", &MeleeRectComponent::isRecovering)
 		.addFunction("isVulnerable", &MeleeRectComponent::isVulnerable)
 		.addFunction("stopMeleeRectUpdating", &MeleeRectComponent::stopMeleeRectUpdating)
+		.addFunction("getCurrentAttackDir", &MeleeRectComponent::getCurrentAttackDir)
 		.endClass();
 
 	luabridge::getGlobalNamespace(luaState)
@@ -745,6 +779,10 @@ void LoadingTask::bindLogicsToLuaScript()
 		.endClass();
 
 	luabridge::getGlobalNamespace(luaState)
+		.beginClass<EntityExpertiseComponent>("EntityExpertiseComponent")
+		.endClass();
+
+	luabridge::getGlobalNamespace(luaState)
 		.beginClass<BuffScript>("BuffScript")
 		.addFunction("getLuaReferenceToBuff", &BuffScript::getLuaReferenceToBuff)
 		.endClass();
@@ -754,15 +792,7 @@ void LoadingTask::bindLogicsToLuaScript()
 
 	/**/
 
-	/*Path Finding classes related begin*/
-	luabridge::getGlobalNamespace(luaState)
-		.beginClass<AStarNode>("AStarNode")
-		.addConstructor<void(*)(void)>()
-		.addData("pos", &AStarNode::pos)
-		.addData("tile", &AStarNode::tile)
-		.endClass();
-
-	/*Path findng classes related end*/
+	
 
 
 	/*Coded C++ classes end here*/

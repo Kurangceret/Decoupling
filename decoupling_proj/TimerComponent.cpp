@@ -42,6 +42,15 @@ void TimerComponent::setNewTimeLimitToTimer(const std::string& timerName, float 
 	iter->second.mTimeLimit = sf::seconds(newSeconds);
 }
 
+sf::Time TimerComponent::getTimeLimitTimer(const std::string& timerName) const
+{
+	auto iter = mTimerDataList.find(timerName);
+	if (iter == mTimerDataList.end())
+		return sf::Time();
+
+	return iter->second.mTimeLimit;
+}
+
 bool TimerComponent::isTimerElapsed(const std::string& timerName) const
 {
 	auto iter = mTimerDataList.find(timerName);

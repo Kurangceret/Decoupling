@@ -47,6 +47,7 @@ PlayerState* PlayerAimRangeState::processRealTimeInput(sf::Time dt,
 	{
 		mSpawnRangeMelee = true;
 		mMouseLastPos = sf::Vector2f(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
+		return nullptr;
 	}
 	MeleeRectComponent* meleeRectComp = mPlayer->comp<MeleeRectComponent>();
 

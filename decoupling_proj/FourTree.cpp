@@ -227,15 +227,18 @@ FourTree::Indexes FourTree::getIndexes(const RotatedRect& rotatedRect)
 }
 
 void FourTree::getObjects(std::vector<Entity*>& entities, const sf::Vector2f& centerRectPos,
-	const sf::FloatRect& rect)
+	const sf::FloatRect& rect, std::vector<sf::FloatRect>& finalIndexesWorldBound)
 {
 	Indexes indexes;
 	if (isSpilt)
 		indexes = getIndexes(centerRectPos, rect);
 
+	if (!isSpilt)
+		finalIndexesWorldBound.push_back(this->getWorldBounds());
+
 	if (!indexes.empty() && isSpilt){
 		for (int i : indexes)
-			mNodes[i]->getObjects(entities, centerRectPos, rect);
+			mNodes[i]->getObjects(entities, centerRectPos, rect, finalIndexesWorldBound);
 		return;
 	}
 
@@ -246,15 +249,20 @@ void FourTree::getObjects(std::vector<Entity*>& entities, const sf::Vector2f& ce
 	}
 }
 
-void FourTree::getObjects(std::vector<Entity*>& entities, const RotatedRect& rotatedRect)
+void FourTree::getObjects(std::vector<Entity*>& entities, const RotatedRect& rotatedRect,
+	std::vector<sf::FloatRect>& finalIndexesWorldBound)
 {
 	Indexes indexes;
 	if (isSpilt)
 		indexes = getIndexes(rotatedRect);
 
+	if (!isSpilt)
+		finalIndexesWorldBound.push_back(this->getWorldBounds());
+	
+
 	if (!indexes.empty() && isSpilt){
 		for (int i : indexes)
-			mNodes[i]->getObjects(entities, rotatedRect);
+			mNodes[i]->getObjects(entities, rotatedRect, finalIndexesWorldBound);
 		return;
 	}
 
@@ -264,13 +272,14 @@ void FourTree::getObjects(std::vector<Entity*>& entities, const RotatedRect& rot
 	}
 }
 
-void FourTree::getObjects(std::vector<Entity *>& entities, Entity *ptr)
+void FourTree::getObjects(std::vector<Entity *>& entities, Entity *ptr,
+	std::vector<sf::FloatRect>& finalIndexesWorldBound)
 {
 	
 	sf::FloatRect boundingRect = ptr->comp<BoxCollisionComponent>()->getTransfromedRect();
 
 	sf::Vector2f ptrPosition = ptr->comp<TransformableComponent>()->getWorldPosition(true);
-	getObjects(entities, ptrPosition, boundingRect);
+	getObjects(entities, ptrPosition, boundingRect, finalIndexesWorldBound);
 }
 
 

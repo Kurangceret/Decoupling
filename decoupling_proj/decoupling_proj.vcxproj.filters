@@ -390,9 +390,6 @@
     <ClCompile Include="PlayerLeftClawState.cpp">
       <Filter>Source Files\PlayerState</Filter>
     </ClCompile>
-    <ClCompile Include="TimerComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SoulHookStruckEvent.cpp">
       <Filter>Source Files\Event</Filter>
     </ClCompile>
@@ -426,9 +423,6 @@
     <ClCompile Include="PlayerAimRangeState.cpp">
       <Filter>Source Files\PlayerState</Filter>
     </ClCompile>
-    <ClCompile Include="FallingSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EntityChildrenComponent.cpp">
       <Filter>Source Files\Component</Filter>
     </ClCompile>
@@ -440,6 +434,27 @@
     </ClCompile>
     <ClCompile Include="EntityGotDamagedEvent.cpp">
       <Filter>Source Files\Event</Filter>
+    </ClCompile>
+    <ClCompile Include="FunctionCallerManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerComponent.cpp">
+      <Filter>Source Files\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="EntityExpertiseComponent.cpp">
+      <Filter>Source Files\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerFireBallState.cpp">
+      <Filter>Source Files\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerCastFireBallState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerCastingBuff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FallingSystem.cpp">
+      <Filter>Source Files\System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -791,9 +806,6 @@
     <ClInclude Include="PlayerLeftClawState.h">
       <Filter>Header Files\PlayerState</Filter>
     </ClInclude>
-    <ClInclude Include="TimerComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SoulHookStruckEvent.h">
       <Filter>Header Files\Event</Filter>
     </ClInclude>
@@ -827,9 +839,6 @@
     <ClInclude Include="PlayerAimRangeState.h">
       <Filter>Header Files\PlayerState</Filter>
     </ClInclude>
-    <ClInclude Include="FallingSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EntityChildrenComponent.h">
       <Filter>Header Files\Component</Filter>
     </ClInclude>
@@ -841,6 +850,27 @@
     </ClInclude>
     <ClInclude Include="EntityGotDamagedEvent.h">
       <Filter>Header Files\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="FunctionCallerManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerComponent.h">
+      <Filter>Header Files\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityExpertiseComponent.h">
+      <Filter>Header Files\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerFireBallState.h">
+      <Filter>Header Files\PlayerState</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerCastFireBallState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerCastingBuff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FallingSystem.h">
+      <Filter>Header Files\System</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

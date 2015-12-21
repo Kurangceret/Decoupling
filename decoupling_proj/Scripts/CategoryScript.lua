@@ -32,8 +32,9 @@ Category.Projectile = 1 << 10
 Category.HealthSpirit = 1 << 11
 Category.SoulHook = 1 << 12
 Category.PlayerElementalShield = 1 << 13
+Category.Fireman = 1 << 14
 Category.PlayerAlly = Category.Player | Category.PlayerElementalShield
-Category.Enemy = Category.Spider | Category.SwampMoa | Category.SkeletonArcher
+Category.Enemy = Category.Spider | Category.SwampMoa | Category.SkeletonArcher | Category.Fireman
 Category.SolidMovingEntity = Category.Enemy | Category.Player | Category.Projectile | Category.HealthSpirit | Category.SoulHook
 Category.SolidEntity = Category.Tile | Category.SolidMovingEntity
 

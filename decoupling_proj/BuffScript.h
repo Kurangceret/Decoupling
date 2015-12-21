@@ -9,14 +9,22 @@ extern "C" {
 # include "lualib.h"
 };
 #include <LuaBridge.h>
+#include <functional>
 
 class Entity;
 class BuffScript{
 public:
 	typedef std::unique_ptr<luabridge::LuaRef> LuaRefPtr;
 	typedef std::unique_ptr<BuffScript> Ptr;
+
+	typedef std::function<void(const luabridge::LuaRef&)> NativeBuffInitializer;
+	typedef std::unique_ptr<luabridge::LuaRef> LuaBuffInitializer;
+	static NativeBuffInitializer mEmptyNativeInitializer;
+	static LuaBuffInitializer mEmptyLuaInitializer;
 public:
-	BuffScript(LuaRefPtr luaRef);
+	BuffScript(LuaRefPtr luaRef, const NativeBuffInitializer& nativeBuffInitalizer = mEmptyNativeInitializer,
+		LuaBuffInitializer luaBuffInitializer = std::move(mEmptyLuaInitializer));
+
 	~BuffScript();
 
 	void enterBuff(Entity* ownerEntity, sf::Time dt);
@@ -32,6 +40,7 @@ public:
 	void absoluteDestroy();
 
 	luabridge::LuaRef getLuaReferenceToBuff();
+	luabridge::LuaRef* getDirectRefToBuff();
 private:
 	LuaRefPtr mLuaReferenceToBuff;
 

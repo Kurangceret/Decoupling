@@ -234,6 +234,11 @@ bool MeleeRectComponent::startMeleeRect(const sf::Vector2f& direction,
 	return true;
 }
 
+sf::Vector2f MeleeRectComponent::getCurrentAttackDir() const
+{
+	return mCurrentAttackDir;
+}
+
 sf::Vector2f MeleeRectComponent::getTransformedMeleeRectPos() const
 {
 	if (!mOwnerEntity->hasComp<TransformableComponent>())

@@ -4,27 +4,35 @@ dofile("Scripts/UtilityScript.lua")
 SpiderAIStates = {
   usePlayerFoundSystem = true,
   rangeCheckingToTarget = 300.0,
-  
 	ChasePlayerState = {
     name = "ChasePlayerState",
 		enter = function(self, ownerEntity, dt, playerEntity)
-      playerPos = playerEntity:compTransform():getWorldPosition(true)
+      --[[playerPos = playerEntity:compTransform():getWorldPosition(true)
         
-      ownerEntity:compAutomaticPath():setDestToCalculate(playerPos.x, playerPos.y)
+      ownerEntity:compAutomaticPath():setDestToCalculate(playerPos.x, playerPos.y)]]--
+      FunctionCallerManager.getInstance():
+        insertNewLuaFunctionCaller(ownerEntity, Category.Player, 
+        self, 
+        function(ownerEntity, selfLuaClass, indexedEntity) 
+          selfLuaClass.mPlayerEntity = indexedEntity
+        end)
+      
+      self.mElapsedTime = self.mDurationBeforeRefreshPath
       self.mChasingRange = EngineUtil.randomRange(64, 100)
 		end,
 
 		update = function(self, ownerEntity, dt, playerEntity)
       self.mElapsedTime = self.mElapsedTime + dt
       
-      if(self.mElapsedTime < 0.30) then
+     
+      if(self.mElapsedTime < self.mDurationBeforeRefreshPath) then
         return
       end
       
-      self.mElapsedTime = 0.0
+      self.mElapsedTime = self.mElapsedTime - self.mDurationBeforeRefreshPath
       automaticPathComp = ownerEntity:compAutomaticPath()
       --if(automaticPathComp:isAutomaticPathsEmpty()) then
-      playerPos = playerEntity:compTransform():getWorldPosition(true)
+      playerPos = self.mPlayerEntity:compTransform():getWorldPosition(true)
         
       ownerEntity:compAutomaticPath():setDestToCalculate(playerPos.x, playerPos.y)
       --end
@@ -32,8 +40,9 @@ SpiderAIStates = {
 		quit = function(self, ownerEntity, dt, playerEntity)
 
     end,
-    
+    mPlayerEntity = nil,
     mChasingRange = 0.0,
+    mDurationBeforeRefreshPath = 0.30,
     mElapsedTime = 0.0,
 
 		Transitions = {
@@ -127,7 +136,7 @@ SpiderAIStates = {
       ownerVelo:setSpeedIdentifier(1.0)
       
     end,
-    mTrackPlayerTime = 1.00,
+    mTrackPlayerTime = 1.10,
     mIdleTime = 1.25,
     mChargingTime = 0.3,
     mRecoveryTime = 0.4,
@@ -189,7 +198,8 @@ SpiderAIStates = {
         wanderVelo.y = playerToOwnerDir.y
       end
       
-      wanderTable = SpiderAIStates.WanderingState.getWanderPosition(ownerEntity:compBoxCollision(), wanderVelo, playerPos)
+      wanderTable = SpiderAIStates.WanderingState.getWanderPosition(ownerEntity:compBoxCollision(), wanderVelo, playerPos, 
+        ownerEntity:compExpertise())
       if(not wanderTable[3]) then
         self.mNoWanderPos = true
         return
@@ -200,7 +210,7 @@ SpiderAIStates = {
 		quit = function(self, ownerEntity, dt, playerEntity)
 
     end,
-    getWanderPosition = function(ownerBoxCol, wanderVelo, playerPos)
+    getWanderPosition = function(ownerBoxCol, wanderVelo, playerPos, ownerExpertise)
       finalTable = {0, 0, false}
       
       lowestRange = 120
@@ -210,6 +220,8 @@ SpiderAIStates = {
       rangeFromPlayer = EngineUtil.randomRange(lowestRange, highestRange)
             
       boundingRect = ownerBoxCol.mBoundingRect
+      
+      
       foundFinalPos = false
       
       repeat
@@ -272,7 +284,7 @@ SpiderAIStates = {
             repeat
               
               node = pathFinder:At(curCoord.x, curCoord.y)
-              if(node ~= nil and node.tile == nil and pathFinder:isRectOverallNodeSafe(node.pos, boundingRect)) then
+              if(node ~= nil and node.tile == nil and pathFinder:isRectOverallNodeSafe(node.pos, boundingRect, ownerExpertise)) then
                 finalTable[1] = node.pos.x
                 finalTable[2] = node.pos.y
                 foundFinalPos = true

@@ -13,8 +13,10 @@
 #include "CreateNewEntityEvent.h"
 #include "BoxCollisionComponent.h"
 #include "HealthComponent.h"
+#include "PlayerFireBallState.h"
 #include "EventManager.h"
-#include "FloatableComponent.h"
+//#include "FloatableComponent.h"
+#include "EntityExpertiseComponent.h"
 #include "Constant.h"
 
 /*const float sideStepDur = 0.15f;
@@ -98,7 +100,11 @@ PlayerState* PlayerSideStepState::handleEvent(const sf::Event& event,
 		return new PlayerAttackState(mPlayer, Utility::unitVector(mousePos - entityWorldPos), mPlayerStateTable,
 			attackModeComp->getCurrentStringIndex());
 	}
-	
+	if (event.type == sf::Event::MouseButtonPressed &&
+		event.mouseButton.button == sf::Mouse::Right)
+	{
+		return new PlayerFireBallState(mPlayer, mPlayerStateTable);
+	}
 	/*if (event.type == sf::Event::MouseButtonPressed &&
 		event.mouseButton.button == sf::Mouse::Right)
 	{
@@ -150,8 +156,8 @@ bool PlayerSideStepState::isStaminaCompEnough(StaminaComponent* staminaComp)
 
 PlayerState* PlayerSideStepState::update(sf::Time dt)
 {
-	mPlayer->comp<FloatableComponent>()->setIsFloating(true);
-
+	//mPlayer->comp<FloatableComponent>()->setIsFloating(true);
+	mPlayer->comp<EntityExpertiseComponent>()->setAbleToFloat(true);
 	VelocityComponent* veloComp = mPlayer->comp<VelocityComponent>();
 	mSideStepDur -= dt;
 

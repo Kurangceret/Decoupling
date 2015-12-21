@@ -6,6 +6,7 @@
 #include "DestroyableComponent.h"
 #include "EntityParentComponent.h"
 #include "EntityChildrenComponent.h"
+#include "FunctionCallerManager.h"
 #include <algorithm>
 
 std::size_t EntityManager::mCurrentEntityIncremental = 0;
@@ -134,7 +135,7 @@ std::vector<Entity*> EntityManager::getEntsByBound(const sf::FloatRect& worldBou
 
 	typedef std::vector<Entity::Ptr>::const_iterator EntityIter;
 
-	for (auto& iter : mEntities){
+	/*for (auto& iter : mEntities){
 		std::vector<Entity*> curLayerEntities;
 		for (EntityIter i = iter.second.begin(); i != iter.second.end();)
 		{
@@ -181,6 +182,57 @@ std::vector<Entity*> EntityManager::getEntsByBound(const sf::FloatRect& worldBou
 			std::back_inserter(entities));
 
 		curLayerEntities.clear();
+	}*/
+	int previousIndex = 0;
+	int latestIndex = -1;
+	for (auto& iter : mEntities){
+		
+		auto finalIter = std::remove_if(iter.second.begin(), iter.second.end(), 
+			[&](Entity::Ptr& entityPtr) -> bool
+		{
+			Entity *curEntity = entityPtr.get();
+			FunctionCallerManager::getInstance()->checkEntityForFunctionCaller(curEntity);
+
+			if (isEntityRemoveable(curEntity)){
+				if (curEntity->hasComp<EntityParentComponent>()){
+					Entity* parentEntity = curEntity->comp<EntityParentComponent>()->getParent();
+					parentEntity->comp<EntityChildrenComponent>()->removeChild(curEntity);
+				}
+				return true;
+			}
+
+			if (!curEntity->hasComp<BoxCollisionComponent>() || curEntity->comp
+				<BoxCollisionComponent>()->getTransfromedRect().intersects(worldBound))
+			{
+				entities.push_back(curEntity);
+				latestIndex++;
+			}
+			return false;
+		});
+				
+		iter.second.erase(finalIter, iter.second.end());
+
+		if (latestIndex > previousIndex){
+			std::sort(entities.begin() + previousIndex, entities.begin() + latestIndex
+				, [](Entity* entity1, Entity* entity2) -> bool
+			{
+				TransformableComponent* entity1Transform = entity1->nonCreateComp<TransformableComponent>();
+				TransformableComponent* entity2Transform = entity2->nonCreateComp<TransformableComponent>();
+
+				if (!entity1Transform || !entity2Transform)
+					return false;
+
+				sf::Vector2f entity1WorldPos = entity1Transform->getWorldPosition(true);
+				sf::Vector2f entity2WorldPos = entity2Transform->getWorldPosition(true);
+
+				return ((entity1WorldPos.y < entity2WorldPos.y) ||
+					(entity1WorldPos.y == entity2WorldPos.y &&
+					entity1WorldPos.x < entity2WorldPos.x));
+
+			});
+		}
+		previousIndex = latestIndex;
+		
 	}
 	return entities;
 }

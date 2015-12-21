@@ -8,6 +8,7 @@
 
 
 class Entity;
+struct AStarNode;
 
 class FourTree{
 public:
@@ -32,10 +33,13 @@ public:
 	void setBounds(sf::FloatRect bound){ mBounds = bound; }
 	void updateBounds(const sf::Vector2f& locationAdd);
 
-	void getObjects(std::vector<Entity *>& entities, Entity *identifier);
+	void getObjects(std::vector<Entity *>& entities, Entity *identifier, 
+		std::vector<sf::FloatRect>& finalIndexesWorldBound = std::vector<sf::FloatRect>());
 	void getObjects(std::vector<Entity*>& entities, const sf::Vector2f& centerRectPos,
-		const sf::FloatRect& rect);
-	void getObjects(std::vector<Entity*>& entities, const RotatedRect& rotatedRect);
+		const sf::FloatRect& rect, std::vector<sf::FloatRect>& finalIndexesWorldBound 
+		= std::vector<sf::FloatRect>());
+	void getObjects(std::vector<Entity*>& entities, const RotatedRect& rotatedRect, 
+		std::vector<sf::FloatRect>& finalIndexesWorldBound = std::vector<sf::FloatRect>());
 
 	void draw(sf::RenderTarget& window);
 

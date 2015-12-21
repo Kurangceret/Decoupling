@@ -15,6 +15,7 @@ public:
 
 	sf::Text& getText();
 	void setString(const std::string& str);
+	void incrementString(const std::string& str);
 private:
 	sf::Text mText;
 };

@@ -46,13 +46,20 @@ void BuffableComponent::insertNewBuff(BuffScript* buffPtr)
 void BuffableComponent::insertNewBuffFromScript(lua_State* luaState)
 {
 	try{
-		luabridge::LuaRef param = luabridge::LuaRef::fromStack(luaState, 2);
+		luabridge::LuaRef newBuff = luabridge::LuaRef::fromStack(luaState, 2);
 		
-		if (getFirstBuffByName(param["name"].cast<std::string>()))
+		if (getFirstBuffByName(newBuff["name"].cast<std::string>()))
 			return;
 
-		if (param.isTable())
-			insertNewBuff(new BuffScript(std::make_unique<luabridge::LuaRef>(param)));
+		luabridge::LuaRef buffInitializer = luabridge::LuaRef::fromStack(luaState, 3);
+		if (!buffInitializer.isNil()){
+			//std::unique_ptr<luabridge::LuaRef> test = std::move(std::make_unique<luabridge::LuaRef>(buffInitializer));
+			insertNewBuff(new BuffScript(std::make_unique<luabridge::LuaRef>(
+				newBuff), BuffScript::mEmptyNativeInitializer, std::make_unique<luabridge::LuaRef>(buffInitializer)));
+		}
+		else{
+			insertNewBuff(new BuffScript(std::make_unique<luabridge::LuaRef>(newBuff)));
+		}
 	}
 	catch (luabridge::LuaException e){
 		std::cout << e.what() << std::endl;
@@ -60,7 +67,8 @@ void BuffableComponent::insertNewBuffFromScript(lua_State* luaState)
 }
 
 void BuffableComponent::insertBuffWithScriptName(const std::string& scriptName,
-	const std::string& tableName)
+	const std::string& tableName,
+	const BuffScript::NativeBuffInitializer& nativeBuffInitalizer)
 {
 	if (luaL_dofile(mLuaState, scriptName.c_str()) != 0){
 		std::cout << lua_tostring(mLuaState, -1) << std::endl;
@@ -75,10 +83,19 @@ void BuffableComponent::insertBuffWithScriptName(const std::string& scriptName,
 
 	try{
 		buffTable["newBuffFunc"](mOwnerEntity);
+		/*nativeBuffInitalizer(mOwnerEntity->comp<BuffableComponent>()->getFirstBuffByName
+			(buffTable["name"].cast<std::string>())->getLuaReferenceToBuff());*/
+		initializeBackQueue(nativeBuffInitalizer);
 	}
 	catch (luabridge::LuaException& e){
 		std::cout << e.what() << std::endl;
 	}
+}
+
+void BuffableComponent::initializeBackQueue(const BuffScript::NativeBuffInitializer& nativeBuffInitializer)
+{
+	if (!mQueueBuffList.empty())
+		nativeBuffInitializer(*mQueueBuffList.back()->getDirectRefToBuff());
 }
 
 BuffScript* BuffableComponent::getFirstBuffByName(const std::string& buffName)

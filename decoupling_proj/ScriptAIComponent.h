@@ -40,5 +40,7 @@ private:
 	bool mUsePlayerFoundSystem;
 	bool mPlayerIsFound;
 	float mRangeCheckingToTarget;
+	//uses in conjunction with mUsePlayerFoundSystem
+	std::unique_ptr<luabridge::LuaRef> mLuaTileChecker;
 };
 

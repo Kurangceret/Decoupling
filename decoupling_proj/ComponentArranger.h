@@ -76,6 +76,8 @@ private:
 		luabridge::LuaRef& table);
 	void readBuffableComponent(Entity* entity, lua_State* luaState,
 		luabridge::LuaRef& table);
+	void readEntityExpertiseComponent(Entity* entity, lua_State* luaState,
+		luabridge::LuaRef& table);
 
 	void arrangeChildEntityList(Entity* entity, lua_State* luaState,
 		luabridge::LuaRef& table);

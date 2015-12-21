@@ -24,3 +24,8 @@ void TextDisplayComponent::setString(const std::string& str)
 {
 	mText.setString(str);
 }
+
+void TextDisplayComponent::incrementString(const std::string& str)
+{
+	mText.setString(mText.getString() + "\n" + str);
+}

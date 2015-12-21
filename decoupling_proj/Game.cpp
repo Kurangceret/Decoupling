@@ -32,6 +32,7 @@
 #include "EntityChildrenComponent.h"
 #include "HealthComponent.h"
 #include "BuffableComponent.h"
+#include "FunctionCallerManager.h"
 #include <SFML/Graphics/Text.hpp>
 #include <LTBL\Light\Light_Point.h>
 #include <LTBL\Utils.h>
@@ -252,6 +253,7 @@ void Game::update(sf::Time dt)
 
 	mCurEntitiesList = mEntityManager.getEntsByBound(updateBound);
 
+	FunctionCallerManager::getInstance()->destroyAllFunctionCaller();
 	mFourTree.fillInFourTree(mCurEntitiesList);
 
 	updateCommonSystem(dt);
@@ -268,15 +270,22 @@ void Game::update(sf::Time dt)
 
 		individualCheckingEntities.clear();
 
+		std::vector<sf::FloatRect> worldBoundList;
+		std::vector<AStarNode*> markedNodes;
+
 		if (entity->hasComp<BoxCollisionComponent>())
-			mFourTree.getObjects(individualCheckingEntities, entity);
+			mFourTree.getObjects(individualCheckingEntities, entity, worldBoundList);
 		else if (entity->hasComp<RotatedBoxCollisionComponent>())
 			mFourTree.getObjects(individualCheckingEntities, 
 				entity->comp<RotatedBoxCollisionComponent>()->getTransformedRotatedRect());
 
+		for (auto& bound : worldBoundList)
+			PathFinder::getInstance()->getListOfNodesBasedOnBoundingRect(bound, markedNodes);
+
+
 		mCollisionHandlerSystems.handleEntityWithItsGroup(entity, dt, individualCheckingEntities);
 		if (mAvoidBoxSystem)
-			mAvoidBoxSystem->performUnalignedAvoidance(entity, individualCheckingEntities, dt);
+			mAvoidBoxSystem->performUnalignedAvoidance(entity, individualCheckingEntities, markedNodes, dt);
 
 		MeleeRectComponent* meleeRectComp = entity->nonCreateComp<MeleeRectComponent>();
 
@@ -314,18 +323,18 @@ void Game::updateCommonSystem(sf::Time dt)
 		//mMeleeRectSystem->update(dt, entity);
 		
 
-		if (entity->hasComp<SpriteComponent>())
-			entity->comp<SpriteComponent>()->updateBlinkStatus(dt);
-
-		if (entity->hasComp<BuffableComponent>())
-			entity->comp<BuffableComponent>()->update(dt);
-
 		if (entity->hasComp<ScriptUpdateComponent>())
 			entity->comp<ScriptUpdateComponent>()->runScriptUpdateFunc(dt);
 
 		if (entity->hasComp<ScriptAIComponent>())
 			entity->comp<ScriptAIComponent>()->update(dt, mPlayer);
 
+		if (entity->hasComp<SpriteComponent>())
+			entity->comp<SpriteComponent>()->updateBlinkStatus(dt);
+
+		if (entity->hasComp<BuffableComponent>())
+			entity->comp<BuffableComponent>()->update(dt);
+		
 		if (entity->hasComp<LightPointComponent>())
 			entity->comp<LightPointComponent>()->updateLightCenter(dt, mWindow.getSize());
 

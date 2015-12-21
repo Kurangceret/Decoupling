@@ -14,7 +14,8 @@
 #include "MovingNode.h"
 
 class Entity;
-
+class EntityExpertiseComponent;
+struct lua_State;
 
 struct ComparePair{
 	bool operator()(const std::pair<AStarNode*, float>& left, 
@@ -70,7 +71,10 @@ public:
 		std::vector<AStarNode*>& markedNodes);
 
 	bool isRectOverallNodeSafe(const sf::Vector2f& entityPos,
-		const sf::FloatRect& entityRect);
+		const sf::FloatRect& entityRect, EntityExpertiseComponent* entExpertiseComp = nullptr);
+
+	/*bool isLuaRectOverallNodeSafe(const sf::Vector2f& entityPos,
+		const sf::FloatRect& entityRect, lua_State* luaState);*/
 private:
 	
 	

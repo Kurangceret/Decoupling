@@ -6,8 +6,9 @@ frameSize = {64, 40}
 boundingBoxSize = {0, frameSize[2] * 0.5, frameSize[1], frameSize[2] * 0.5}
 
 tailAttackRange = 52
+--duration should last only 0.2
 tailAttackDuration = 1.2
-tailAttackDelayDuration = 1.0
+tailAttackDelayDuration = 0.85
 
 
 
@@ -54,7 +55,11 @@ SwampMoa = {
 		},
 		AutomaticPathComponent = {
 
-		},
+    },
+    BuffableComponent = {
+      
+      
+    },
 		ScriptAIComponent = {
 			AIScriptDir = AIScriptDir .. "SwampMoaAIScript.lua",
       tableName = "SwampMoa"

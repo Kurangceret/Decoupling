@@ -10,6 +10,7 @@ namespace GraphicsType{
 		SwampMoa,
 		SkeletonArcher,
 		Player,
+		Fireman,
 		GraphicsTypeCount
 	};
 }

@@ -140,8 +140,13 @@ Player = {
       category = Category.Player
       
     },
-    FloatableComponent = {
+    --[[FloatableComponent = {
       isFloating = false
+    },]]--
+    
+    EntityExpertiseComponent = {
+      ableToFloat = false,
+      ableToWalk = true
     },
 
 		--[[AutomaticPathComponent = {

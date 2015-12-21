@@ -1,5 +1,5 @@
 #include "DestroyableComponent.h"
-
+#include <iostream>
 
 DestroyableComponent::DestroyableComponent(Entity* entity)
 :Component(entity)
@@ -15,14 +15,24 @@ DestroyableComponent::~DestroyableComponent()
 
 bool DestroyableComponent::isDestroyed() const
 {
-	if (mLuaDestroyedFunc)
-		return (*mLuaDestroyedFunc)(mOwnerEntity);
+	try{
+		if (mLuaDestroyedFunc)
+			return (*mLuaDestroyedFunc)(mOwnerEntity);
+	}
+	catch (luabridge::LuaException& e){
+		std::cout << e.what() << std::endl;
+	}
 	return false;
 }
 
 bool DestroyableComponent::isRemoveable() const
 {
-	if (mLuaRemoveableFunc)
-		return (*mLuaRemoveableFunc)(mOwnerEntity);
+	try{
+		if (mLuaRemoveableFunc)
+			return (*mLuaRemoveableFunc)(mOwnerEntity);
+	}
+	catch (luabridge::LuaException& e){
+		std::cout << e.what() << std::endl;
+	}
 	return false;
 }

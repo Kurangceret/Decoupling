@@ -72,8 +72,13 @@ PrototypeProjectile = {
         },
       }
     },
-    FloatableComponent = {
+    --[[FloatableComponent = {
       isFloating = true
+      
+    },]]--
+    EntityExpertiseComponent = {
+      ableToFloat = true,
+      ableToWalk = true
       
     },
     DestroyableComponent = {

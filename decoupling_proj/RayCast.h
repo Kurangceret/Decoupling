@@ -7,6 +7,7 @@
 class Entity;
 class PathFinder;
 struct AStarNode;
+struct lua_State;
 
 class RayCast{
 public:
@@ -50,7 +51,7 @@ public:
 		
 
 	static bool castRayLineScript(float initialX, float initialY, 
-		float targetX, float targetY, PathFinder* pathFinder);
+		float targetX, float targetY, PathFinder* pathFinder, lua_State* luaState);
 
 	static bool castRayLine(const sf::Vector2f& initialPos, const sf::Vector2f& targetPos,
 		PathFinder* pathFinder,

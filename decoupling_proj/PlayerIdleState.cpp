@@ -17,6 +17,9 @@
 #include "PlayerAimRangeState.h"
 #include "HealthComponent.h"
 #include "BuffableComponent.h"
+#include "PlayerFireBallState.h"
+#include "PlayerCastFireBallState.h"
+#include "PlayerCastingBuff.h"
 #include "Constant.h"
 
 PlayerIdleState::PlayerIdleState(Entity* playerEntity, const luabridge::LuaRef& playerStateTable)
@@ -89,6 +92,13 @@ PlayerState* PlayerIdleState::handleEvent(const sf::Event& event,
 		//healthComp->setImmuneTimer(sf::seconds(5.0f));
 		spiritCoreComp->decreaseSpiritCore(1);
 	}
+
+	if (event.type == sf::Event::KeyPressed &&
+		event.key.code == sf::Keyboard::E)
+	{
+		return new PlayerCastingBuff(mPlayer, mPlayerStateTable, 
+			buffScriptDir + "FireSlashBuffScript.lua", "FireSlashBuff");
+	}
 	
 	
 	if (event.type == sf::Event::MouseButtonPressed && 
@@ -111,8 +121,9 @@ PlayerState* PlayerIdleState::handleEvent(const sf::Event& event,
 		sf::Vector2f mousePos(renderWindow.mapPixelToCoords(sf::Mouse::getPosition(renderWindow)));
 		sf::Vector2f entityWorldPos = mPlayer->comp<TransformableComponent>()->getWorldPosition(true);
 		
-
-		return new PlayerAimRangeState(mPlayer, mPlayerStateTable);
+		return new PlayerCastFireBallState(mPlayer, mPlayerStateTable, Utility::unitVector(mousePos - entityWorldPos));
+		//return new PlayerFireBallState(mPlayer, mPlayerStateTable);
+		//return new PlayerAimRangeState(mPlayer, mPlayerStateTable);
 	}
 	/*if (event.type == sf::Event::MouseButtonPressed &&
 		event.mouseButton.button == sf::Mouse::Right)

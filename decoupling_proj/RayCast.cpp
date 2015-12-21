@@ -2,6 +2,12 @@
 #include "Utility.h"
 #include "PathFinder.h"
 #include <algorithm>
+extern "C" {
+# include "lua.h"
+# include "lauxlib.h"
+# include "lualib.h"
+};
+#include <LuaBridge.h>
 
 /*if (!designatedNode)
 falseFlag = true;
@@ -26,7 +32,7 @@ RayCast::~RayCast()
 }
 
 RayCast::TileChecker RayCast::mStandardTileChecker = [](AStarNode* designatedNode) -> bool{
-	if (!designatedNode || designatedNode->tile /*|| designatedNode->isFallable*/)
+	if (!designatedNode || designatedNode->tile || designatedNode->isFallable)
 		return false;
 	return true;
 };
@@ -128,10 +134,23 @@ bool RayCast::castMultipleRayLines(const sf::Vector2f& initialPos,
 
 
 bool RayCast::castRayLineScript(float initialX, float initialY,
-	float targetX, float targetY, PathFinder* pathFinder)
+	float targetX, float targetY, PathFinder* pathFinder, lua_State* luaState)
 {
+	
+	luabridge::LuaRef luaTileChecker = luabridge::LuaRef::fromStack(luaState, 6);
+	TileChecker tileChecker;
+
+	if (!luaTileChecker.isNil()){
+		tileChecker = [&](AStarNode* curNode) -> bool{
+			return luaTileChecker(curNode);
+		};
+	}
+	else
+		tileChecker = mStandardTileChecker;
+	
+
 	return castRayLine(sf::Vector2f(initialX, initialY), 
-		sf::Vector2f(targetX, targetY), pathFinder);
+		sf::Vector2f(targetX, targetY), pathFinder, tileChecker);
 }
 
 

@@ -4,7 +4,7 @@ dofile("Scripts/SwampMoaScript.lua")
 SwampMoaAIStates = {
   usePlayerFoundSystem = true,
   rangeCheckingToTarget = 300.0,
-  
+ 
 	ChasePlayerState = {
     name = "ChasePlayerState",
 		enter = function(self, ownerEntity, dt, playerEntity)
@@ -147,6 +147,7 @@ SwampMoaAIStates = {
       playerPos = playerEntity:compTransform():getWorldPosition(true)
       ownerBoundingRect = ownerEntity:compBoxCollision().mBoundingRect
       
+      ownerExpertise = ownerEntity:compExpertise()
       curRange = self.mCutRange
       rangeLimit = self.mCutRange * -1.0
       
@@ -161,7 +162,8 @@ SwampMoaAIStates = {
         
         testNode = pathFinder:sceneToGraph(testPos.x, testPos.y)
         
-        if(testNode ~= nil and testNode.tile == nil and pathFinder:isRectOverallNodeSafe(testNode.pos, ownerBoundingRect)) then
+        if(testNode ~= nil and testNode.tile == nil and 
+          pathFinder:isRectOverallNodeSafe(testNode.pos, ownerBoundingRect, ownerExpertise)) then
           finalPos = testPos
         end
         

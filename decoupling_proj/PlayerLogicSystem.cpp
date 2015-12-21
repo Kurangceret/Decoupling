@@ -17,6 +17,7 @@
 #include "SpiritCoreChangedEvent.h"
 #include "FloatableComponent.h"
 #include "TextDisplayComponent.h"
+#include "EntityExpertiseComponent.h"
 #include <iostream>
 
 PlayerLogicSystem::PlayerLogicSystem(Entity* entityPlayer, const luabridge::LuaRef& playerStateDataTable)
@@ -38,7 +39,8 @@ void PlayerLogicSystem::handleEvent(const sf::Event& event,
 	const sf::RenderWindow& renderWindow)
 {
 	mPlayer->comp<VelocityComponent>()->setVelocity(0.f, 0.f, false);
-	mPlayer->comp<FloatableComponent>()->setIsFloating(false);
+	//mPlayer->comp<FloatableComponent>()->setIsFloating(false);
+	mPlayer->comp<EntityExpertiseComponent>()->setAbleToFloat(false);
 	if (!mPlayerState.get())
 		return;
 

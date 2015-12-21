@@ -35,6 +35,7 @@ namespace ComponentIdentifier{
 		SpiritCoreComponent = 1 << 27,
 		EntityChildrenComponent = 1 << 28,
 		BuffableComponent = 1 << 29,
+		EntityExpertiseComponent = 1 << 30,
 		CollisionComponent = BoxCollisionComponent | CircleCollisionComponent | RotatedBoxCollisionComponent,
 		DisplayComponent = SpriteComponent | TextDisplayComponent,
 		ComponentCounts

@@ -14,6 +14,8 @@ LevelDir = "Media/Levels/"
 ScriptDir = "Scripts/"
 AnimScriptDir = ScriptDir .. "AnimationScripts/"
 AIScriptDir = ScriptDir .. "AIScripts/"
+SettingScriptDir = ScriptDir .. "SettingScripts/"
+BuffScriptDir = ScriptDir .. "BuffScripts/"
 
 --Mathematichal Constant
 PI = 3.14159265359

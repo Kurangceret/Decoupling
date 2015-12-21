@@ -39,7 +39,6 @@ class EventManager{
 public:
 	//typedef std::function<void(EventBase*)> EventCallBackFunc;
 public:
-	EventManager();
 	~EventManager();
 
 	void queueScriptEvent(EventBase* eventBase);
@@ -67,6 +66,8 @@ public:
 
 	void cleanEverything();
 private:
+	EventManager();
+
 	EventBase* getFrontEventQueue() const;
 	void popEventQueue();
 

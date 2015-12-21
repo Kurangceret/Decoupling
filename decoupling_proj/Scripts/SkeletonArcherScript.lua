@@ -23,6 +23,10 @@ SkeletonArcher = {
       
       
     },
+    BuffableComponent = {
+      
+      
+    },
 		BoxCollisionComponent = {
 			floatRect = {0, 0, boundingBoxSize[3], boundingBoxSize[4]},
       collisionReactor = function(thisEntity, collidedEntity, systemCollision)

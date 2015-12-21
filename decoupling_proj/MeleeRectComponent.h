@@ -91,6 +91,8 @@ public:
 	bool isRecovering() const;
 
 	sf::Vector2f getTransformedMeleeRectPos() const;
+
+	sf::Vector2f getCurrentAttackDir() const;
 private:
 	void calculateMeleeRect();
 

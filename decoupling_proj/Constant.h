@@ -13,4 +13,5 @@ const std::string fontDir = "Media/Fonts/";
 const std::string levelDir = "Media/Levels/";
 const std::string scriptDir = "Scripts/";
 const std::string buffScriptDir = scriptDir + "BuffScripts/";
+const std::string debuffScriptDir = scriptDir + "DebuffScripts/";
 #endif

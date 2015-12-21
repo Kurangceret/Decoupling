@@ -31,6 +31,7 @@
 #include "DestroyableComponent.h"
 #include "EntityChildrenComponent.h"
 #include "BuffableComponent.h"
+#include "EntityExpertiseComponent.h"
 
 ComponentArranger::ComponentArranger(GeneralData* generalData)
 :mTexturesStringManager(*generalData->getTexturesStringManager()),
@@ -174,6 +175,10 @@ void ComponentArranger::readFromLuaScript(Entity* entity,
 	if (!table["BuffableComponent"].isNil() && table["BuffableComponent"].isTable())
 		readBuffableComponent(entity, luaState,
 			table["BuffableComponent"].cast<luabridge::LuaRef>());
+
+	if (!table["EntityExpertiseComponent"].isNil() && table["EntityExpertiseComponent"].isTable())
+		readEntityExpertiseComponent(entity, luaState,
+			table["EntityExpertiseComponent"].cast<luabridge::LuaRef>());
 
 	if (!table["EntityChildrenComponent"].isNil() && table["EntityChildrenComponent"].isTable())
 		arrangeChildEntityList(entity, luaState,
@@ -505,7 +510,12 @@ void ComponentArranger::readScriptAIComponent(Entity* entity, lua_State* luaStat
 		scriptAIComp->mUsePlayerFoundSystem = states["usePlayerFoundSystem"].cast<bool>();
 	if (!states["rangeCheckingToTarget"].isNil())
 		scriptAIComp->mRangeCheckingToTarget = states["rangeCheckingToTarget"].cast<float>();
+	if (!states["rayCastTileChecker"].isNil()){
+		std::unique_ptr<luabridge::LuaRef> rayCastChecker(
+			std::make_unique<luabridge::LuaRef>(states["rayCastTileChecker"]));
 
+		scriptAIComp->mLuaTileChecker.reset(rayCastChecker.release());
+	}
 	//std::string initialStateName = states["initialState"].cast<std::string>();
 	states["initialStateFunc"](entity);
 }
@@ -720,4 +730,12 @@ void ComponentArranger::readBuffableComponent(Entity* entity, lua_State* luaStat
 {
 	BuffableComponent* buffableComp = entity->comp<BuffableComponent>();
 	buffableComp->mLuaState = luaState;
+}
+
+void ComponentArranger::readEntityExpertiseComponent(Entity* entity, lua_State* luaState,
+	luabridge::LuaRef& table)
+{
+	EntityExpertiseComponent* entExpertiseComp = entity->comp<EntityExpertiseComponent>();
+	entExpertiseComp->setAbleToFloat(table["ableToFloat"].cast<bool>());
+	entExpertiseComp->setAbleToWalk(table["ableToWalk"].cast<bool>());
 }

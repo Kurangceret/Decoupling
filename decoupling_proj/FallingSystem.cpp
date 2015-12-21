@@ -1,10 +1,11 @@
 #include "FallingSystem.h"
 #include "Entity.h"
-#include "FloatableComponent.h"
+//#include "FloatableComponent.h"
 #include "PathFinder.h"
 #include "TransformableComponent.h"
 #include "HealthComponent.h"
 #include "Utility.h"
+#include "EntityExpertiseComponent.h"
 
 FallingSystem::FallingSystem()
 {
@@ -22,8 +23,9 @@ FallingSystem::~FallingSystem()
 
 void FallingSystem::processEntity(sf::Time dt, Entity* entity)
 {
-	if (entity->hasComp<FloatableComponent>() && entity->comp<FloatableComponent>()->isFloating())
+	if (entity->hasComp<EntityExpertiseComponent>() && entity->comp<EntityExpertiseComponent>()->isAbleToFloat())
 		return;
+
 	sf::Vector2f entityWorldPos = entity->comp<TransformableComponent>()->getWorldPosition(true);
 
 	PathFinder* pathFinder = PathFinder::getInstance();
@@ -36,7 +38,7 @@ void FallingSystem::processEntity(sf::Time dt, Entity* entity)
 	sf::Vector2f tileSize = pathFinder->getTileSize();
 
 	if (Utility::vectorLength(curNode->pos - 
-		entityWorldPos) <= (tileSize.x * 0.375f))
+		entityWorldPos) <= (tileSize.x * 0.5f))
 	{
 		HealthComponent* healthComp = entity->comp<HealthComponent>();
 		healthComp->damage(healthComp->getMaxHealth(), entity);

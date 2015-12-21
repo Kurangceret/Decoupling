@@ -4,7 +4,12 @@
 SkeletonArcherAIStates = {
   usePlayerFoundSystem = true,
   rangeCheckingToTarget = 400.0,
-  
+  rayCastTileChecker = function(curNode)
+    if(curNode == nil or curNode.tile ~= nil) then
+      return false
+    end
+    return true
+  end,
 	ShootPlayerState = {
 		enter = function(self, ownerEntity, dt, playerEntity)
       self.mCurDelay = self.mInitialDelay
@@ -20,7 +25,8 @@ SkeletonArcherAIStates = {
       
       if(self.mCurProjectileSpawned >= self.mNumberOfProjectile) then
         if(EngineUtil.vectorLength(EngineUtil.minusVector(playerPos, ownerPos)) <= SkeletonArcherAIStates.rangeCheckingToTarget and
-          RayCast.castRayLine(ownerPos.x, ownerPos.y, playerPos.x, playerPos.y, PathFinder.getInstance()) == true) then
+          RayCast.castRayLine(ownerPos.x, ownerPos.y, playerPos.x, playerPos.y, PathFinder.getInstance()
+            , SkeletonArcherAIStates.rayCastTileChecker) == true) then
             self.mCurDelay = self.mNormalDelay
             self.mCurProjectileSpawned = 0
         end
